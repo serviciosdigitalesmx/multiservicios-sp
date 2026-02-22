@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiservicios SP - Recepción Inteligente</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header con logo */
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.3));
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 40px 20px;
+            text-align: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+        }
+
+        .hero h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 span {
+            color: #00d4ff;
+            display: block;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .hero p {
+            color: #888;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        /* Botones de servicio */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .service-btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border: none;
+            padding: 25px 20px;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .service-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        .service-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .service-btn:hover::before {
+            left: 100%;
+        }
+
+        .service-icon {
+            font-size: 2em;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.3));
+        }
+
+        /* Modal de diagnóstico */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid #00d4ff;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #fff;
+        }
+
+        .modal-title {
+            color: #00d4ff;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+        }
+
+        .question-label {
+            display: block;
+            margin-bottom: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #0f3460;
+            border: 2px solid transparent;
+            padding: 12px;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95em;
+            text-align: center;
+        }
+
+        .option-btn:hover {
+            background: #1a5490;
+            border-color: #00d4ff;
+        }
+
+        .option-btn.selected {
+            background: #00d4ff;
+            color: #000;
+            font-weight: bold;
+            border-color: #00d4ff;
+        }
+
+        .whatsapp-btn {
+            width: 100%;
+            background: #25d366;
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-btn:hover {
+            background: #128c7e;
+            transform: scale(1.02);
+        }
+
+        .whatsapp-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Sección de confianza */
+        .trust-section {
+            padding: 50px 20px;
+            background: #0a0a0a;
+            text-align: center;
+        }
+
+        .trust-title {
+            color: #00d4ff;
+            font-size: 1.8em;
+            margin-bottom: 30px;
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .trust-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #333;
+        }
+
+        .trust-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .trust-card h3 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .trust-card p {
+            color: #888;
+            font-size: 0.95em;
+        }
+
+        /* Servicios detallados */
+        .services-detail {
+            padding: 50px 20px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%);
+        }
+
+        .section-title {
+            text-align: center;
+            color: #fff;
+            font-size: 1.8em;
+            margin-bottom: 10px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .services-list {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .service-item {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s;
+        }
+
+        .service-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .service-item-icon {
+            font-size: 1.5em;
+        }
+
+        /* CTA Final */
+        .final-cta {
+            padding: 60px 20px;
+            text-align: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 212, 255, 0.03) 10px,
+                rgba(0, 212, 255, 0.03) 20px
+            );
+            animation: move 20s linear infinite;
+        }
+
+        @keyframes move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .final-cta h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .final-cta p {
+            color: #888;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sticky Button */
+        .sticky-cta {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #075e54 0%, #128c7e 100%);
+            padding: 15px;
+            text-align: center;
+            z-index: 999;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .sticky-cta:hover {
+            background: linear-gradient(90deg, #128c7e 0%, #25d366 100%);
+        }
+
+        .sticky-cta span {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Utilidades */
+        .hidden {
+            display: none !important;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 1.8em;
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header con Logo -->
+    <header class="header">
+        <img src="https://raw.githubusercontent.com/jesusvilla091921-create/multiservicios-sp/main/logo.png" alt="Multiservicios SP" class="logo">
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>¿Qué necesitas reparar hoy? <span>Atendemos hogares y empresas. Respuesta rápida en Monterrey.</span></h1>
+        
+        <div class="services-grid">
+            <button class="service-btn" onclick="openModal('minisplit')">
+                <span class="service-icon">❄️</span>
+                <div>
+                    <div>Aire Acondicionado</div>
+                    <small style="opacity: 0.8; font-size: 0.8em;">Minisplit</small>
+                </div>
+            </button>
+
+            <button class="service-btn" onclick="openModal('plomeria')" style="background: linear-gradient(135deg, #1e3c72 0%, #4a90e2 100%);">
+                <span class="service-icon">🚰</span>
+                <div>
+                    <div>Plomería</div>
+                    <small style="opacity: 0.8; font-size: 0.8em;">Destapacaños</small>
+                </div>
+            </button>
+
+            <button class="service-btn" onclick="openModal('electricidad')" style="background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); color: #000;">
+                <span class="service-icon">⚡</span>
+                <div>
+                    <div>Electricidad</div>
+                    <small style="opacity: 0.8; font-size: 0.8em;">Residencial y Comercial</small>
+                </div>
+            </button>
+
+            <button class="service-btn" onclick="openModal('soldadura')" style="background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);">
+                <span class="service-icon">🧱</span>
+                <div>
+                    <div>Soldadura</div>
+                    <small style="opacity: 0.8; font-size: 0.8em;">Portones y Estructuras</small>
+                </div>
+            </button>
+
+            <button class="service-btn" onclick="openModal('camaras')" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                <span class="service-icon">🎥</span>
+                <div>
+                    <div>Cámaras</div>
+                    <small style="opacity: 0.8; font-size: 0.8em;">Instalaciones</small>
+                </div>
+            </button>
+
+            <button class="service-btn" onclick="openModal('general')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <span class="service-icon">🏠</span>
+                <div>
+                    <div>Mantenimiento General</div>
+                    <small style="opacity: 0.8; font-size: 0.8em;">Todo tipo de servicios</small>
+                </div>
+            </button>
+        </div>
+    </section>
+
+    <!-- Modal de Diagnóstico -->
+    <div id="diagnosticModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2 class="modal-title" id="modalTitle">
+                <span id="modalIcon">🔧</span>
+                <span id="modalServiceName">Servicio</span>
+            </h2>
+
+            <div id="questionsContainer">
+                <!-- Las preguntas se generan dinámicamente -->
+            </div>
+
+            <button class="whatsapp-btn pulse" id="whatsappBtn" onclick="sendToWhatsApp()" disabled>
+                <span>📱</span>
+                <span>Cotizar por WhatsApp</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sección de Confianza -->
+    <section class="trust-section">
+        <h2 class="trust-title">¿Por qué confiar?</h2>
+        <div class="trust-grid">
+            <div class="trust-card">
+                <div class="trust-icon">✅</div>
+                <h3>Llegamos</h3>
+                <p>Puntualidad garantizada. Respetamos tu tiempo.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">💬</div>
+                <h3>Cotizamos Claro</h3>
+                <p>Precios transparentes, sin sorpresas ni letra chica.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon">🛡️</div>
+                <h3>Cumplimos</h3>
+                <p>Técnico capacitado en ESEM. Trabajo garantizado por escrito.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Servicios Detallados -->
+    <section class="services-detail">
+        <h2 class="section-title">Hacemos esto y lo hacemos bien:</h2>
+        <p class="section-subtitle">Especialistas técnicos, no improvisados</p>
+        
+        <div class="services-list">
+            <div class="service-item">
+                <span class="service-item-icon">🔥</span>
+                <div>
+                    <strong>Soldadura en general</strong>
+                    <p style="color: #888; font-size: 0.9em;">Portones, estructuras, registros, rejas</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">❄️</span>
+                <div>
+                    <strong>Mantenimiento y reparación de minisplit</strong>
+                    <p style="color: #888; font-size: 0.9em;">Carga de gas, limpieza profunda, diagnóstico</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">🚰</span>
+                <div>
+                    <strong>Plomería y destapacaños</strong>
+                    <p style="color: #888; font-size: 0.9em;">Máquina profesional, sin dañar tuberías</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">⚡</span>
+                <div>
+                    <strong>Electricidad residencial y comercial</strong>
+                    <p style="color: #888; font-size: 0.9em;">Instalaciones, tableros, cortocircuitos</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">🎨</span>
+                <div>
+                    <strong>Pintura con pulverizadora</strong>
+                    <p style="color: #888; font-size: 0.9em;">Acabado profesional, rápido y limpio</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">🏗️</span>
+                <div>
+                    <strong>Tablaroca e impermeabilización</strong>
+                    <p style="color: #888; font-size: 0.9em;">Muros, plafones, sellado de goteras</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">📹</span>
+                <div>
+                    <strong>Instalación de cámaras y TV</strong>
+                    <p style="color: #888; font-size: 0.9em;">CCTV, soporte, cableado estructurado</p>
+                </div>
+            </div>
+            
+            <div class="service-item">
+                <span class="service-item-icon">💧</span>
+                <div>
+                    <strong>Tinacos, bombas y abanicos</strong>
+                    <p style="color: #888; font-size: 0.9em;">Instalación, reparación y mantenimiento</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="final-cta" style="padding-bottom: 100px;">
+        <h2>No cotizamos por corazonadas.</h2>
+        <h2 style="color: #25d366; margin-bottom: 20px;">Cotizamos por WhatsApp.</h2>
+        <p>Diagnóstico inteligente → Ficha técnica → Trabajo cerrado</p>
+        
+        <button class="whatsapp-btn" style="max-width: 400px; margin: 0 auto;" onclick="openModal('general')">
+            <span>🚀</span>
+            <span>Quiero mi cotización ahora</span>
+        </button>
+    </section>
+
+    <!-- Sticky Button -->
+    <div class="sticky-cta" onclick="openModal('general')">
+        <span>💬</span>
+        <span>Hablar ahora con Multiservicios SP</span>
+        <span style="font-size: 1.2em;">→</span>
+    </div>
+
+    <script>
+        // Configuración de servicios y sus flujos de diagnóstico
+        const serviceConfig = {
+            minisplit: {
+                name: "Aire Acondicionado / Minisplit",
+                icon: "❄️",
+                questions: [
+                    {
+                        id: "problema",
+                        label: "¿Qué problema tienes?",
+                        options: ["No enfría", "Hace ruido", "Gotea agua", "Solo necesita mantenimiento", "No enciende", "Hielo en tuberías"]
+                    },
+                    {
+                        id: "tipo",
+                        label: "¿Dónde se encuentra?",
+                        options: ["Casa habitación", "Negocio / Local", "Oficina", "Bodega / Industrial"]
+                    },
+                    {
+                        id: "urgencia",
+                        label: "¿Qué tan urgente es?",
+                        options: ["Hoy mismo (emergencia)", "Mañana", "Esta semana", "Puede agendarse"]
+                    },
+                    {
+                        id: "cantidad",
+                        label: "¿Cuántos equipos?",
+                        options: ["1 equipo", "2 equipos", "3-5 equipos", "Más de 5"]
+                    }
+                ]
+            },
+            plomeria: {
+                name: "Plomería / Destapacaños",
+                icon: "🚰",
+                questions: [
+                    {
+                        id: "problema",
+                        label: "¿Qué necesitas resolver?",
+                        options: ["Destapar caño / drenaje", "Fuga de agua visible", "Grifo gotea", "W.C. tapado", "Instalar llaves/lavabo", "Tubería rota"]
+                    },
+                    {
+                        id: "lugar",
+                        label: "¿Ubicación del problema?",
+                        options: ["Cocina", "Baño", "Patio / Exterior", "Toda la casa", "Negocio"]
+                    },
+                    {
+                        id: "urgencia",
+                        label: "¿Urgencia?",
+                        options: ["Emergencia (inundación/fuga fuerte)", "Hoy", "Mañana", "Esta semana"]
+                    }
+                ]
+            },
+            electricidad: {
+                name: "Electricidad",
+                icon: "⚡",
+                questions: [
+                    {
+                        id: "problema",
+                        label: "¿Qué sucede?",
+                        options: ["Corto circuito / Plafones", "Apagones constantes", "Instalar tomas/lámparas", "Tablero principal", "Cableado nuevo", "Aumento de carga"]
+                    },
+                    {
+                        id: "tipo",
+                        label: "Tipo de inmueble",
+                        options: ["Casa", "Departamento", "Local comercial", "Bodega / Nave", "Oficina"]
+                    },
+                    {
+                        id: "urgencia",
+                        label: "¿Cuándo lo necesitas?",
+                        options: ["Urgente (sin luz)", "Hoy", "Mañana", "Agendar visita"]
+                    }
+                ]
+            },
+            soldadura: {
+                name: "Soldadura / Herrería",
+                icon: "🧱",
+                questions: [
+                    {
+                        id: "trabajo",
+                        label: "¿Qué necesitas?",
+                        options: ["Reparar portón", "Nuevo portón / Reja", "Estructura metálica", "Soldadura general", "Registro / Tapas", "Escaleras / Barandales"]
+                    },
+                    {
+                        id: "material",
+                        label: "Material predominante",
+                        options: ["Hierro / Acero", "Aluminio", "Inoxidable", "No sé / Mixto"]
+                    },
+                    {
+                        id: "urgencia",
+                        label: "¿Tiempo de entrega?",
+                        options: ["Urgente (seguridad)", "2-3 días", "Esta semana", "Planeación"]
+                    }
+                ]
+            },
+            camaras: {
+                name: "Cámaras de Seguridad",
+                icon: "🎥",
+                questions: [
+                    {
+                        id: "servicio",
+                        label: "¿Qué necesitas?",
+                        options: ["Instalación nueva", "Reparar existente", "Agregar cámaras", "Configurar app/celular", "Mantenimiento"]
+                    },
+                    {
+                        id: "cantidad",
+                        label: "¿Cuántas cámaras?",
+                        options: ["1-2 cámaras", "3-4 cámaras", "5-8 cámaras", "Sistema grande (+8)"]
+                    },
+                    {
+                        id: "tipo",
+                        label: "Tipo de lugar",
+                        options: ["Casa", "Negocio pequeño", "Bodega / Nave", "Condominio / Residencial"]
+                    }
+                ]
+            },
+            general: {
+                name: "Mantenimiento General",
+                icon: "🏠",
+                questions: [
+                    {
+                        id: "servicio",
+                        label: "¿Qué tipo de trabajo?",
+                        options: ["Pintura", "Tablaroca / Muros", "Impermeabilización", "Instalación tinaco/bomba", "Varios servicios", "Otro (especificar)"]
+                    },
+                    {
+                        id: "tamaño",
+                        label: "¿Tamaño del proyecto?",
+                        options: ["Trabajo pequeño (1 día)", "Mediano (2-3 días)", "Grande (semana+)", "Mantenimiento recurrente"]
+                    },
+                    {
+                        id: "tipo",
+                        label: "¿Dónde?",
+                        options: ["Casa", "Departamento", "Negocio", "Bodega / Terreno"]
+                    },
+                    {
+                        id: "urgencia",
+                        label: "¿Prioridad?",
+                        options: ["Urgente", "Esta semana", "Próxima semana", "Cotización para después"]
+                    }
+                ]
+            }
+        };
+
+        let currentService = null;
+        let answers = {};
+
+        function openModal(serviceKey) {
+            currentService = serviceKey;
+            answers = {};
+            const config = serviceConfig[serviceKey];
+            
+            document.getElementById('modalIcon').textContent = config.icon;
+            document.getElementById('modalServiceName').textContent = config.name;
+            
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            
+            config.questions.forEach((q, index) => {
+                const block = document.createElement('div');
+                block.className = 'question-block';
+                block.innerHTML = `
+                    <label class="question-label">${index + 1}. ${q.label}</label>
+                    <div class="options-grid" id="q-${q.id}">
+                        ${q.options.map(opt => `
+                            <button class="option-btn" onclick="selectOption('${q.id}', '${opt}', this)">${opt}</button>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(block);
+            });
+            
+            document.getElementById('diagnosticModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            checkCompletion();
+        }
+
+        function selectOption(questionId, value, btnElement) {
+            // Remover selección previa
+            const container = document.getElementById(`q-${questionId}`);
+            container.querySelectorAll('.option-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Agregar selección nueva
+            btnElement.classList.add('selected');
+            answers[questionId] = value;
+            
+            checkCompletion();
+        }
+
+        function checkCompletion() {
+            const config = serviceConfig[currentService];
+            const required = config.questions.length;
+            const answered = Object.keys(answers).length;
+            
+            const btn = document.getElementById('whatsappBtn');
+            if (answered >= required) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>📱</span><span>Enviar ficha a WhatsApp</span>';
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = `<span>📱</span><span>Responde ${required - answered} preguntas más...</span>`;
+            }
+        }
+
+        function sendToWhatsApp() {
+            const config = serviceConfig[currentService];
+            const phone = "5218131031445"; // Número de Multiservicios SP
+            
+            // Construir la ficha técnica
+            let message = `*NUEVA COTIZACIÓN - MULTISERVICIOS SP*%0A%0A`;
+            message += `*Servicio:* ${config.name}%0A`;
+            message += `*Fecha:* ${new Date().toLocaleDateString('es-MX')}%0A%0A`;
+            
+            message += `*DETALLES DEL DIAGNÓSTICO:*%0A`;
+            config.questions.forEach(q => {
+                const respuesta = answers[q.id] || "No especificado";
+                message += `• ${q.label.replace('¿', '').replace('?', '')}: *${respuesta}*%0A`;
+            });
+            
+            message += `%0A*Ubicación:* _[El cliente debe confirmar]_%0A`;
+            message += `*Nombre:* _[Pendiente]_%0A%0A`;
+            message += `¿Podemos agendar visita para evaluación?`;
+            
+            const url = `https://wa.me/${phone}?text=${message}`;
+            window.open(url, '_blank');
+            
+            // Cerrar modal después de 1 segundo
+            setTimeout(() => {
+                closeModal();
+            }, 1000);
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== e.currentTarget) return;
+            document.getElementById('diagnosticModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Cerrar con ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
