@@ -4,11 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
   <title>Multiservicios SP · ingeniería de mantenimiento</title>
-  <!-- Fuente técnica: Inter + Space Grotesk -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,500;14..32,700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -51,7 +49,6 @@
       letter-spacing: -0.02em;
     }
 
-    /* ESCÁNER GLOBAL */
     body::after {
       content: '';
       position: fixed;
@@ -81,7 +78,6 @@
       100% { top: -10px; opacity: 0.1; }
     }
 
-    /* HEADER */
     .header {
       padding: 24px 20px 10px;
       text-align: center;
@@ -104,7 +100,6 @@
       transform: scale(1.02);
     }
 
-    /* HERO - TEXTO ACTUALIZADO */
     .hero {
       padding: 50px 20px 40px;
       text-align: center;
@@ -154,7 +149,6 @@
       color: #e0f0ff;
     }
 
-    /* BOTONES DE SERVICIO PRINCIPALES */
     .services-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -246,7 +240,6 @@
       opacity: 0.8;
     }
 
-    /* TARJETAS DE SERVICIOS DETALLADAS - AHORA EXPANDIBLES CON BOTÓN CTA */
     .services-detail {
       padding: 70px 20px;
       background: #05070c;
@@ -275,7 +268,6 @@
       margin-right: auto;
     }
 
-    /* Contenedor de tarjetas - grid */
     .services-list {
       max-width: 1200px;
       margin: 0 auto;
@@ -284,7 +276,6 @@
       gap: 25px;
     }
 
-    /* Tarjeta expandible */
     .service-card {
       background: rgba(20,28,36,0.6);
       backdrop-filter: blur(10px);
@@ -304,7 +295,6 @@
       box-shadow: 0 0 40px rgba(0,224,255,0.2);
     }
 
-    /* Cabecera de la tarjeta (siempre visible) */
     .card-header {
       padding: 28px 24px;
       display: flex;
@@ -330,7 +320,6 @@
       margin-top: 5px;
     }
 
-    /* Capa técnica expandible */
     .technical-layer {
       max-height: 0;
       opacity: 0;
@@ -346,7 +335,6 @@
       padding: 0 24px 24px 24px;
     }
 
-    /* Subservicios chips */
     .subservice-chip {
       background: rgba(0,224,255,0.08);
       border: 1px solid rgba(0,224,255,0.2);
@@ -366,7 +354,6 @@
       color: white;
     }
 
-    /* Botón CTA dentro de cada tarjeta */
     .card-cta {
       background: transparent;
       border: 1px solid var(--cyan-exothermic);
@@ -391,7 +378,6 @@
       box-shadow: 0 0 30px var(--cyan-exothermic);
     }
 
-    /* PROTOCOLO ESEM */
     .trust-section {
       padding: 80px 20px;
       background: #0a0d14;
@@ -442,7 +428,6 @@
     }
     .step-icon { font-size: 3.2rem; filter: drop-shadow(0 0 16px cyan); }
 
-    /* MODAL */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -594,7 +579,6 @@
     .whatsapp-btn:not(:disabled):hover { transform: scale(1.02); background: #1bbd7a; }
     .whatsapp-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    /* STICKY BAR */
     .sticky-cta {
       position: fixed;
       bottom: 20px;
@@ -651,7 +635,6 @@
   </header>
 
   <section class="hero">
-    <!-- TEXTO ACTUALIZADO SEGÚN SOLICITUD -->
     <h1>INGENIERÍA DE MANTENIMIENTO<br><span>Diagnóstico predictivo y ejecución técnica.</span></h1>
     <p>⚡ respuesta 30 min · monterrey</p>
     <div class="services-grid">
@@ -664,11 +647,9 @@
     </div>
   </section>
 
-  <!-- PROTOCOLO ESEM (paso a paso) - AHORA CON INTERACTIVIDAD EXPANDIBLE -->
   <section class="trust-section">
     <h2 class="trust-title">protocolo esem</h2>
     <div class="protocol-grid">
-      <!-- Tarjeta 1: escaneo digital (expandible con botón) -->
       <div class="protocol-step service-card" id="protocol1" onclick="toggleCard('protocol1')">
         <div class="card-header" style="padding:0; flex-direction:column;">
           <span class="step-icon">📡</span>
@@ -685,7 +666,6 @@
         </div>
       </div>
       
-      <!-- Tarjeta 2: ficha técnica -->
       <div class="protocol-step service-card" id="protocol2" onclick="toggleCard('protocol2')">
         <div class="card-header" style="padding:0; flex-direction:column;">
           <span class="step-icon">📋</span>
@@ -702,7 +682,6 @@
         </div>
       </div>
       
-      <!-- Tarjeta 3: ejecución certificada -->
       <div class="protocol-step service-card" id="protocol3" onclick="toggleCard('protocol3')">
         <div class="card-header" style="padding:0; flex-direction:column;">
           <span class="step-icon">🔧</span>
@@ -721,13 +700,11 @@
     </div>
   </section>
 
-  <!-- ESPECIALIDADES DE ACERO - TARJETAS EXPANDIBLES CON CTA -->
   <section class="services-detail">
     <h2 class="section-title">especialidades de acero</h2>
     <div class="section-subtitle">soldamos · instalamos · reparamos · certificamos</div>
     
     <div class="services-list">
-      <!-- Soldadura estructural -->
       <div class="service-card" id="card-soldadura" onclick="toggleCard('card-soldadura')">
         <div class="card-header">
           <span class="service-item-icon">🔥</span>
@@ -748,7 +725,6 @@
         </div>
       </div>
 
-      <!-- Minisplit / VRV -->
       <div class="service-card" id="card-minisplit" onclick="toggleCard('card-minisplit')">
         <div class="card-header">
           <span class="service-item-icon">❄️</span>
@@ -769,7 +745,6 @@
         </div>
       </div>
 
-      <!-- Plomería pesada -->
       <div class="service-card" id="card-plomeria" onclick="toggleCard('card-plomeria')">
         <div class="card-header">
           <span class="service-item-icon">🚰</span>
@@ -790,7 +765,6 @@
         </div>
       </div>
 
-      <!-- Electricidad trifásica -->
       <div class="service-card" id="card-electrica" onclick="toggleCard('card-electrica')">
         <div class="card-header">
           <span class="service-item-icon">⚡</span>
@@ -811,7 +785,6 @@
         </div>
       </div>
 
-      <!-- Pintura industrial -->
       <div class="service-card" id="card-pintura" onclick="toggleCard('card-pintura')">
         <div class="card-header">
           <span class="service-item-icon">🎨</span>
@@ -832,7 +805,6 @@
         </div>
       </div>
 
-      <!-- CCTV / control acceso -->
       <div class="service-card" id="card-cctv" onclick="toggleCard('card-cctv')">
         <div class="card-header">
           <span class="service-item-icon">📹</span>
@@ -855,7 +827,6 @@
     </div>
   </section>
 
-  <!-- MODAL DIAGNÓSTICO -->
   <div id="diagnosticModal" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
       <span class="close-modal" onclick="closeModal()">&times;</span>
@@ -879,7 +850,6 @@
     </div>
   </div>
 
-  <!-- STICKY ACTION -->
   <div class="sticky-cta" onclick="openModal('general')">
     <span>💬</span>
     <span>cotizar ahora · 30 min</span>
@@ -887,7 +857,9 @@
   </div>
 
   <script>
-    // Configuración de servicios
+    // Configuración
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhRwQBM2PkaJDaRafjltp6eYHKbBTT6EuDxjPNlehO4m9nTlWUZoqZ4NKHoMhPYL_O/exec'; // ← Reemplazar con tu URL
+    
     const serviceConfig = {
       minisplit: { name: "minisplit · climatización", icon: "❄️", questions: [
         { id: "p1", label: "síntoma principal", options: ["no enfría", "ruido anómalo", "gotea agua", "no enciende", "hielo en tubería", "mantenimiento preventivo"] },
@@ -1058,18 +1030,76 @@
       document.querySelector('.modal-nav').style.display = 'flex';
     }
 
-    function sendToWhatsApp() {
+    // ===== FUNCIÓN PRINCIPAL MODIFICADA =====
+    async function sendToWhatsApp() {
       const cfg = serviceConfig[currentService];
-      const phone = '5218131031445';
+      const phone = '5218131031445'; // Número del técnico
       
-      let msg = `*NUEVA COTIZACIÓN · MULTISERVICIOS SP*%0A%0A`;
-      msg += `*${cfg.name}* %0A`;
-      cfg.questions.forEach(q => {
-        msg += `• ${q.label} : *${answers[q.id] || '—'}*%0A`;
+      // Solicitar nombre y teléfono
+      const nombreCliente = prompt('Por favor ingresa tu nombre completo:');
+      if (!nombreCliente) {
+        alert('El nombre es obligatorio');
+        return;
+      }
+      
+      const telefonoCliente = prompt('Ingresa tu teléfono (opcional):') || '';
+      
+      // Generar folio único
+      const ahora = new Date();
+      const year = ahora.getFullYear().toString().slice(-2);
+      const month = (ahora.getMonth() + 1).toString().padStart(2, '0');
+      const day = ahora.getDate().toString().padStart(2, '0');
+      const random = Math.floor(Math.random() * 9000 + 1000);
+      const folio = `COT-${year}${month}${day}-${random}`;
+      
+      // Construir objeto para enviar a Apps Script
+      const datosParaCloud = {
+        servicio: cfg.name,
+        nombreCliente: nombreCliente,
+        telefono: telefonoCliente,
+        respuestas: answers,
+        folio: folio
+      };
+      
+      // Agregar preguntas y respuestas individuales
+      cfg.questions.forEach((q, index) => {
+        datosParaCloud[`pregunta${index+1}`] = q.label;
+        datosParaCloud[`respuesta${index+1}`] = answers[q.id] || '';
       });
-      msg += `%0A📍 _remitente espera ficha técnica_`;
       
-      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+      // Enviar a Google Sheets (en segundo plano, no bloqueante)
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datosParaCloud)
+        });
+        console.log('✅ Datos guardados en la nube');
+      } catch (error) {
+        console.error('Error al guardar en nube:', error);
+        // Continuamos aunque falle el guardado en nube
+      }
+      
+      // ===== CONSTRUIR FICHA LIMPIA PARA WHATSAPP (SIN LINKS) =====
+      let mensaje = `🔧 *NUEVA COTIZACIÓN - MULTISERVICIOS SP* 🔧\n\n`;
+      mensaje += `📋 *FOLIO:* ${folio}\n`;
+      mensaje += `👤 *CLIENTE:* ${nombreCliente}\n`;
+      if (telefonoCliente) mensaje += `📞 *TEL:* ${telefonoCliente}\n`;
+      mensaje += `🔨 *SERVICIO:* ${cfg.name}\n\n`;
+      mensaje += `📊 *DIAGNÓSTICO:*\n`;
+      
+      cfg.questions.forEach(q => {
+        mensaje += `• ${q.label}: *${answers[q.id] || '—'}*\n`;
+      });
+      
+      mensaje += `\n⏱️ *FECHA:* ${ahora.toLocaleDateString('es-MX')}\n`;
+      mensaje += `🕐 *HORA:* ${ahora.toLocaleTimeString('es-MX')}\n\n`;
+      mensaje += `_El técnico procesará esta solicitud._`;
+      
+      // Abrir WhatsApp con el mensaje limpio
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`, '_blank');
+      
       setTimeout(closeModal, 900);
     }
 
