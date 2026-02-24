@@ -205,6 +205,7 @@
     </style>
 </head>
 <body class="min-h-screen p-4">
+    <!-- Header fijo -->
     <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm">
         <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -252,40 +253,7 @@
             </div>
         </div>
 
-        <!-- Familia de servicio -->
-        <div class="glass-panel p-6">
-            <div class="section-title">
-                <i class="fas fa-tools"></i> FAMILIA DE SERVICIO
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-                <button onclick="selectService('minisplit')" id="svc-minisplit" class="service-card flex flex-col items-center">
-                    <i class="fas fa-snowflake text-2xl mb-1 text-[#4d9fdc]"></i>
-                    <span class="font-semibold text-sm">Minisplit</span>
-                </button>
-                <button onclick="selectService('plomeria')" id="svc-plomeria" class="service-card flex flex-col items-center">
-                    <i class="fas fa-faucet-drip text-2xl mb-1 text-[#4d9fdc]"></i>
-                    <span class="font-semibold text-sm">Plomería</span>
-                </button>
-                <button onclick="selectService('electricidad')" id="svc-electricidad" class="service-card flex flex-col items-center">
-                    <i class="fas fa-bolt text-2xl mb-1 text-[#4d9fdc]"></i>
-                    <span class="font-semibold text-sm">Electricidad</span>
-                </button>
-                <button onclick="selectService('soldadura')" id="svc-soldadura" class="service-card flex flex-col items-center">
-                    <i class="fas fa-hammer text-2xl mb-1 text-[#4d9fdc]"></i>
-                    <span class="font-semibold text-sm">Herrería</span>
-                </button>
-                <button onclick="selectService('camaras')" id="svc-camaras" class="service-card flex flex-col items-center">
-                    <i class="fas fa-video text-2xl mb-1 text-[#4d9fdc]"></i>
-                    <span class="font-semibold text-sm">Cámaras</span>
-                </button>
-                <button onclick="selectService('general')" id="svc-general" class="service-card flex flex-col items-center">
-                    <i class="fas fa-toolbox text-2xl mb-1 text-[#4d9fdc]"></i>
-                    <span class="font-semibold text-sm">General</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Datos del cliente -->
+        <!-- Datos del cliente en grid -->
         <div class="glass-panel p-6">
             <div class="section-title">
                 <i class="fas fa-user-tie"></i> DATOS DEL CLIENTE
@@ -306,7 +274,7 @@
             </div>
         </div>
 
-        <!-- Diagnóstico técnico -->
+        <!-- Diagnóstico técnico en tarjeta -->
         <div class="glass-panel p-6">
             <div class="section-title">
                 <i class="fas fa-stethoscope"></i> DIAGNÓSTICO TÉCNICO
@@ -331,7 +299,7 @@
             </div>
         </div>
 
-        <!-- Conceptos -->
+        <!-- Materiales y conceptos -->
         <div class="glass-panel p-6">
             <div class="flex justify-between items-center mb-4">
                 <div class="section-title">
@@ -368,7 +336,7 @@
                         </tr>
                     </thead>
                     <tbody id="items-container">
-                        <tr><td colspan="5" class="text-center py-8 text-gray-500">No hay conceptos agregados</td></tr>
+                        <!-- Los items se renderizan dinámicamente -->
                     </tbody>
                 </table>
             </div>
@@ -462,14 +430,13 @@
             'general': 'General'
         };
 
-        let currentService = '';
+        let currentService = 'minisplit';
         let items = [];
         let materialDatabase = [];
         let currentFolio = null;
         let cotizacionData = null;
         let pdfDoc = null;
 
-        // ===== RELOJ =====
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('es-MX', {hour:'2-digit', minute:'2-digit'});
@@ -478,133 +445,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ===== DETECCIÓN DE SERVICIO POR PALABRAS CLAVE =====
-        function detectServiceFromString(servicioStr) {
-            if (!servicioStr) return null;
-            const s = servicioStr.toLowerCase();
-            
-            if (s.includes('electri')) return 'electricidad';
-            if (s.includes('plomer')) return 'plomeria';
-            if (s.includes('cctv') || s.includes('cámara') || s.includes('camara')) return 'camaras';
-            if (s.includes('sold') || s.includes('herr')) return 'soldadura';
-            if (s.includes('clima') || s.includes('mini')) return 'minisplit';
-            if (s.includes('general') || s.includes('mantenimiento')) return 'general';
-            
-            return null;
-        }
-
-        // ===== SELECCIÓN DE SERVICIO =====
-        function selectService(service) {
-            currentService = service;
-            document.querySelectorAll('.service-card').forEach(el => el.classList.remove('active'));
-            const btn = document.getElementById(`svc-${service}`);
-            if (btn) btn.classList.add('active');
-        }
-
-        // ===== RENDERIZAR ITEMS =====
-        function renderItems() {
-            const container = document.getElementById('items-container');
-            if (items.length === 0) {
-                container.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">No hay conceptos agregados</td></tr>`;
-                return;
-            }
-            let html = '';
-            items.forEach((item, index) => {
-                const qty = item.qty || 1;
-                const price = item.price || 0;
-                html += `
-                <tr class="border-b border-gray-100">
-                    <td class="py-3 px-2">
-                        <input type="text" value="${item.desc.replace(/"/g, '&quot;')}" onchange="updateItemDesc(${index}, this.value)" class="w-full bg-transparent border-0 focus:ring-0 text-sm">
-                    </td>
-                    <td class="py-3 px-2">
-                        <input type="number" min="1" value="${qty}" onchange="updateItemQty(${index}, this.value)" class="w-20 text-center bg-gray-50 border border-gray-200 rounded-lg py-1 px-2 text-sm">
-                    </td>
-                    <td class="py-3 px-2">
-                        <input type="number" min="0" step="0.01" value="${price}" onchange="updateItemPrice(${index}, this.value)" class="w-32 text-right bg-gray-50 border border-gray-200 rounded-lg py-1 px-2 text-sm">
-                    </td>
-                    <td class="py-3 px-2 text-right font-semibold">$${(qty * price).toFixed(2)}</td>
-                    <td class="py-3 px-2 text-center">
-                        <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                </tr>`;
-            });
-            container.innerHTML = html;
-        }
-
-        // ===== CARGAR DESDE FOLIO =====
-        async function loadFromFolio() {
-            const params = new URLSearchParams(window.location.search);
-            const folio = params.get('folio');
-            
-            if (!folio) {
-                return false;
-            }
-            
-            currentFolio = folio;
-            document.getElementById('folioIndicator').innerText = folio;
-            document.getElementById('folioIndicator').classList.remove('hidden');
-            document.getElementById('folioSearchInput').value = folio;
-            
-            showToast('Cargando cotización...');
-            
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?folio=${encodeURIComponent(folio)}`);
-                const data = await response.json();
-                
-                if (data.success && data.cotizacion) {
-                    cotizacionData = data.cotizacion;
-                    
-                    // Cargar datos del cliente
-                    document.getElementById('clientName').value = cotizacionData.Nombre_Cliente || '';
-                    document.getElementById('clientPhone').value = cotizacionData.Telefono || '';
-                    document.getElementById('clientAddress').value = cotizacionData.Direccion || '';
-                    
-                    // Cargar diagnóstico
-                    if (cotizacionData.Respuesta1) {
-                        document.getElementById('diagnosticoSintoma').textContent = cotizacionData.Respuesta1;
-                    }
-                    if (cotizacionData.Respuesta2) {
-                        document.getElementById('diagnosticoUbicacion').textContent = cotizacionData.Respuesta2;
-                    }
-                    if (cotizacionData.Respuesta3) {
-                        document.getElementById('diagnosticoUrgencia').textContent = cotizacionData.Respuesta3;
-                    }
-                    if (cotizacionData.Respuesta4) {
-                        document.getElementById('diagnosticoEquipos').textContent = cotizacionData.Respuesta4;
-                    }
-                    
-                    // Detectar servicio automáticamente
-                    if (cotizacionData.Servicio) {
-                        const detectedService = detectServiceFromString(cotizacionData.Servicio);
-                        if (detectedService) {
-                            selectService(detectedService);
-                        }
-                    }
-                    
-                    // Mostrar banner
-                    document.getElementById('remoteQuoteBanner').classList.remove('hidden');
-                    document.getElementById('bannerDetails').innerHTML = `Folio: ${folio}<br>${cotizacionData.Servicio || 'Servicio no especificado'}`;
-                    document.getElementById('folioSearchResult').innerHTML = '✅ Cotización cargada exitosamente';
-                    
-                    showToast('Cotización cargada');
-                    return true;
-                } else {
-                    document.getElementById('folioSearchResult').innerHTML = '❌ Folio no encontrado';
-                    showToast('Folio no encontrado', 'error');
-                    return false;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('folioSearchResult').innerHTML = '❌ Error de conexión';
-                showToast('Error al conectar con el servidor', 'error');
-                return false;
-            }
-        }
-
-        // ===== CARGAR FOLIO DESDE INPUT =====
         async function loadFolioFromInput() {
             const folio = document.getElementById('folioSearchInput').value.trim();
             if (!folio) {
@@ -634,13 +474,56 @@
             }
         }
 
-        // ===== CARGAR MATERIALES DESDE LA NUBE =====
-        async function loadMaterialsFromCloud() {
-            if (!currentService) {
-                showToast('Selecciona un servicio primero', 'error');
-                return;
-            }
+        async function loadFromFolio() {
+            const params = new URLSearchParams(window.location.search);
+            const folio = params.get('folio');
             
+            if (folio) {
+                currentFolio = folio;
+                document.getElementById('folioIndicator').innerText = folio;
+                document.getElementById('folioIndicator').classList.remove('hidden');
+                document.getElementById('folioSearchInput').value = folio;
+                
+                showToast('Cargando cotización...');
+                
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?folio=${encodeURIComponent(folio)}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.cotizacion) {
+                        cotizacionData = data.cotizacion;
+                        
+                        document.getElementById('clientName').value = cotizacionData.Nombre_Cliente || '';
+                        document.getElementById('clientPhone').value = cotizacionData.Telefono || '';
+                        document.getElementById('clientAddress').value = cotizacionData.Direccion || '';
+                        
+                        // Cargar diagnóstico si existe
+                        if (cotizacionData.Respuesta1) {
+                            document.getElementById('diagnosticoSintoma').textContent = cotizacionData.Respuesta1;
+                        }
+                        if (cotizacionData.Respuesta2) {
+                            document.getElementById('diagnosticoUbicacion').textContent = cotizacionData.Respuesta2;
+                        }
+                        if (cotizacionData.Respuesta3) {
+                            document.getElementById('diagnosticoUrgencia').textContent = cotizacionData.Respuesta3;
+                        }
+                        if (cotizacionData.Respuesta4) {
+                            document.getElementById('diagnosticoEquipos').textContent = cotizacionData.Respuesta4;
+                        }
+                        
+                        document.getElementById('remoteQuoteBanner').classList.remove('hidden');
+                        document.getElementById('bannerDetails').innerHTML = `Folio: ${folio}<br>${cotizacionData.Servicio || ''}`;
+                        document.getElementById('folioSearchResult').innerHTML = '✅ Cotización cargada exitosamente';
+                        
+                        showToast('Cotización cargada');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+        }
+
+        async function loadMaterialsFromCloud() {
             const familia = serviceFamily[currentService];
             if (!familia) return;
             
@@ -670,7 +553,36 @@
             }
         }
 
-        // ===== FUNCIONES DE ITEMS =====
+        function renderItems() {
+            const container = document.getElementById('items-container');
+            if (items.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-gray-500">Añade materiales a la cotización</td></tr>`;
+                return;
+            }
+            let html = '';
+            items.forEach((item, index) => {
+                html += `
+                <tr class="border-b border-gray-100">
+                    <td class="py-3 px-2">
+                        <input type="text" value="${item.desc.replace(/"/g, '&quot;')}" onchange="updateItemDesc(${index}, this.value)" class="w-full bg-transparent border-0 focus:ring-0 text-sm">
+                    </td>
+                    <td class="py-3 px-2">
+                        <input type="number" min="1" value="${item.qty}" onchange="updateItemQty(${index}, this.value)" class="w-20 text-center bg-gray-50 border border-gray-200 rounded-lg py-1 px-2 text-sm">
+                    </td>
+                    <td class="py-3 px-2">
+                        <input type="number" min="0" step="0.01" value="${item.price}" onchange="updateItemPrice(${index}, this.value)" class="w-32 text-right bg-gray-50 border border-gray-200 rounded-lg py-1 px-2 text-sm">
+                    </td>
+                    <td class="py-3 px-2 text-right font-semibold">$${(item.qty * item.price).toFixed(2)}</td>
+                    <td class="py-3 px-2 text-center">
+                        <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            container.innerHTML = html;
+        }
+
         window.addItem = () => {
             items.push({ id: Date.now() + Math.random(), desc: 'Nuevo concepto', qty: 1, price: 0 });
             renderItems();
@@ -678,23 +590,10 @@
         };
 
         window.updateItemDesc = (index, val) => { items[index].desc = val; calculateTotal(); };
-        window.updateItemQty = (index, val) => { 
-            items[index].qty = Math.max(1, parseInt(val) || 1); 
-            renderItems(); 
-            calculateTotal(); 
-        };
-        window.updateItemPrice = (index, val) => { 
-            items[index].price = parseFloat(val) || 0; 
-            renderItems(); 
-            calculateTotal(); 
-        };
-        window.removeItem = (index) => { 
-            items.splice(index, 1); 
-            renderItems(); 
-            calculateTotal(); 
-        };
+        window.updateItemQty = (index, val) => { items[index].qty = Math.max(1, parseInt(val) || 1); renderItems(); calculateTotal(); };
+        window.updateItemPrice = (index, val) => { items[index].price = parseFloat(val) || 0; renderItems(); calculateTotal(); };
+        window.removeItem = (index) => { items.splice(index, 1); renderItems(); calculateTotal(); };
 
-        // ===== BUSCADOR DE MATERIALES =====
         window.filterMaterials = function() {
             const searchTerm = document.getElementById('materialSearch').value.toLowerCase();
             const resultsDiv = document.getElementById('searchResults');
@@ -737,13 +636,12 @@
             showToast('Material agregado');
         };
 
-        // ===== CÁLCULO DE TOTALES =====
         window.calculateTotal = () => {
             const labor = parseFloat(document.getElementById('laborCost').value) || 0;
             const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
             
             let subtotal = 0;
-            items.forEach(i => subtotal += ((i.qty || 1) * (i.price || 0)));
+            items.forEach(i => subtotal += (i.qty * i.price));
             
             const tax = subtotal * (taxRate / 100);
             const total = subtotal + tax + labor;
@@ -756,11 +654,11 @@
             return { subtotal, tax, labor, total, taxRate };
         };
 
-        // ===== GENERADOR DE PDF PREMIUM =====
+        // Generador de PDF Premium
         window.generatePDF = () => {
             const client = document.getElementById('clientName').value.trim() || 'Cliente';
             const { subtotal, tax, labor, total, taxRate } = calculateTotal();
-            const folio = currentFolio || 'COT-' + Date.now().toString().slice(-6);
+            const folio = currentFolio || 'COT-SIN-FOLIO';
             const fecha = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
             const address = document.getElementById('clientAddress').value || '';
             const phone = document.getElementById('clientPhone').value || '';
@@ -768,16 +666,16 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
 
-            // Fondo blanco
+            // Fondo blanco limpio
             doc.setFillColor(255, 255, 255);
             doc.rect(0, 0, 210, 297, 'F');
 
-            // Borde
+            // Borde sutil
             doc.setDrawColor(77, 159, 220);
             doc.setLineWidth(0.3);
             doc.rect(10, 10, 190, 277);
 
-            // Header
+            // Header con logo y folio
             doc.setFillColor(10, 25, 41);
             doc.rect(10, 10, 190, 25, 'F');
             
@@ -800,6 +698,7 @@
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text('DATOS DEL CLIENTE', 15, 50);
+            
             doc.setDrawColor(77, 159, 220);
             doc.setLineWidth(0.2);
             doc.line(15, 52, 195, 52);
@@ -810,18 +709,13 @@
             if (phone) doc.text(`Teléfono: ${phone}`, 15, 69);
             if (address) doc.text(`Dirección: ${address}`, 15, 76);
 
-            // Diagnóstico
+            // Diagnóstico técnico
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.text('DIAGNÓSTICO TÉCNICO', 15, 92);
             doc.line(15, 94, 195, 94);
 
             // Grid de diagnóstico
-            const sintoma = document.getElementById('diagnosticoSintoma').textContent;
-            const ubicacion = document.getElementById('diagnosticoUbicacion').textContent;
-            const urgencia = document.getElementById('diagnosticoUrgencia').textContent;
-            const equipos = document.getElementById('diagnosticoEquipos').textContent;
-
             doc.setFillColor(245, 247, 250);
             doc.roundedRect(15, 98, 85, 20, 3, 3, 'F');
             doc.roundedRect(110, 98, 85, 20, 3, 3, 'F');
@@ -838,10 +732,10 @@
             doc.setTextColor(10, 25, 41);
             doc.setFontSize(10);
             doc.setFont('helvetica', 'bold');
-            doc.text(sintoma !== '-' ? sintoma : 'No especificado', 20, 113);
-            doc.text(ubicacion !== '-' ? ubicacion : 'No especificado', 115, 113);
-            doc.text(urgencia !== '-' ? urgencia : 'No especificado', 20, 138);
-            doc.text(equipos !== '-' ? equipos : 'No especificado', 115, 138);
+            doc.text(document.getElementById('diagnosticoSintoma').textContent, 20, 113);
+            doc.text(document.getElementById('diagnosticoUbicacion').textContent, 115, 113);
+            doc.text(document.getElementById('diagnosticoUrgencia').textContent, 20, 138);
+            doc.text(document.getElementById('diagnosticoEquipos').textContent, 115, 138);
 
             // Tabla de conceptos
             doc.setFontSize(12);
@@ -849,52 +743,46 @@
             doc.text('CONCEPTOS', 15, 158);
             doc.line(15, 160, 195, 160);
 
-            const bodyRows = items.map(i => {
-                const qty = i.qty || 1;
-                const price = i.price || 0;
-                return [
-                    i.desc,
-                    qty.toString(),
-                    '$' + price.toFixed(2),
-                    '$' + (qty * price).toFixed(2)
-                ];
-            });
+            const bodyRows = items.map(i => [
+                i.desc,
+                i.qty.toString(),
+                '$' + i.price.toFixed(2),
+                '$' + (i.qty * i.price).toFixed(2)
+            ]);
             
             if (labor > 0) {
                 bodyRows.push(['Mano de obra profesional', '1', '$' + labor.toFixed(2), '$' + labor.toFixed(2)]);
             }
 
-            if (bodyRows.length > 0) {
-                doc.autoTable({
-                    startY: 165,
-                    head: [['Descripción', 'Cant.', 'Precio Unit.', 'Importe']],
-                    body: bodyRows,
-                    theme: 'plain',
-                    headStyles: { 
-                        fillColor: [10, 25, 41],
-                        textColor: [255,255,255],
-                        fontStyle: 'bold',
-                        fontSize: 9,
-                        halign: 'left'
-                    },
-                    bodyStyles: { 
-                        textColor: [10, 25, 41],
-                        fontSize: 9,
-                        lineColor: [230, 230, 230],
-                        lineWidth: 0.1
-                    },
-                    columnStyles: {
-                        0: { cellWidth: 80 },
-                        1: { cellWidth: 25, halign: 'center' },
-                        2: { cellWidth: 35, halign: 'right' },
-                        3: { cellWidth: 35, halign: 'right' }
-                    },
-                    margin: { left: 15, right: 15 },
-                    alternateRowStyles: { fillColor: [245, 247, 250] }
-                });
-            }
+            doc.autoTable({
+                startY: 165,
+                head: [['Descripción', 'Cant.', 'Precio Unit.', 'Importe']],
+                body: bodyRows,
+                theme: 'plain',
+                headStyles: { 
+                    fillColor: [10, 25, 41],
+                    textColor: [255,255,255],
+                    fontStyle: 'bold',
+                    fontSize: 9,
+                    halign: 'left'
+                },
+                bodyStyles: { 
+                    textColor: [10, 25, 41],
+                    fontSize: 9,
+                    lineColor: [230, 230, 230],
+                    lineWidth: 0.1
+                },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 25, halign: 'center' },
+                    2: { cellWidth: 35, halign: 'right' },
+                    3: { cellWidth: 35, halign: 'right' }
+                },
+                margin: { left: 15, right: 15 },
+                alternateRowStyles: { fillColor: [245, 247, 250] }
+            });
 
-            const finalY = doc.previousAutoTable?.finalY + 10 || 175;
+            const finalY = doc.previousAutoTable.finalY + 10;
 
             // Totales
             doc.setFillColor(245, 247, 250);
@@ -917,7 +805,7 @@
             doc.text('TOTAL:', 125, finalY + 22);
             doc.text('$' + total.toFixed(2), 185, finalY + 22, { align: 'right' });
 
-            // Términos
+            // Términos y firmas
             doc.setDrawColor(200, 200, 200);
             doc.line(15, 240, 195, 240);
             
@@ -927,71 +815,58 @@
             doc.text('Términos y condiciones:', 15, 250);
             doc.text('• Esta cotización es válida por 15 días.', 15, 257);
             doc.text('• Se requiere 50% de anticipo para iniciar los trabajos.', 15, 263);
-            doc.text('• Los precios incluyen IVA.', 15, 269);
+            doc.text('• Los precios incluyen IVA (excepto donde se indique).', 15, 269);
             
             // Firmas
             doc.text('_________________________', 35, 280);
             doc.text('Técnico responsable', 40, 287, { align: 'center' });
+            
             doc.text('_________________________', 135, 280);
             doc.text('Firma del cliente', 150, 287, { align: 'center' });
+
+            // Número de página
+            doc.setFontSize(7);
+            doc.text('Documento generado por Multiservicios SP - Sistema Profesional', 105, 295, { align: 'center' });
 
             pdfDoc = doc;
             document.getElementById('pdfContent').innerHTML = `<iframe src="${doc.output('datauristring')}" width="100%" height="100%" style="border: none;"></iframe>`;
             document.getElementById('pdfModal').classList.add('active');
         };
 
-        // ===== FUNCIONES DE PDF =====
         window.closePDF = () => document.getElementById('pdfModal').classList.remove('active');
         window.downloadPDF = () => pdfDoc?.save(`cotizacion_${currentFolio || 'nueva'}.pdf`);
 
         window.sharePDF = () => {
-            const msg = `📄 Cotización ${currentFolio || 'nueva'} lista para revisión.`;
+            const msg = `📄 Cotización ${currentFolio || 'sin-folio'} lista para revisión.`;
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
-        // ===== COMPARTIR POR WHATSAPP =====
         window.shareWhatsApp = () => {
-            const client = document.getElementById('clientName').value.trim() || 'Cliente';
+            const client = document.getElementById('clientName').value.trim();
+            if (!client) {
+                showToast('No hay datos de cliente para compartir', 'error');
+                return;
+            }
+            
             const { total } = calculateTotal();
             
             let msg = `*COTIZACIÓN MULTISERVICIOS SP*\n`;
             msg += `👤 Cliente: ${client}\n`;
-            if(currentService) msg += `🔨 Servicio: ${serviceFamily[currentService]}\n`;
+            msg += `🔨 Servicio: ${serviceFamily[currentService]}\n`;
             if(currentFolio) msg += `📋 Folio: ${currentFolio}\n`;
             msg += `💰 Total: $${total.toFixed(2)}`;
             
             window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         };
 
-        // ===== ACTUALIZAR ESTADO =====
         window.updateRemoteStatus = async () => {
             if (!currentFolio) {
                 showToast('No hay folio activo', 'error');
                 return;
             }
-
-            const estado = prompt('Ingresa el nuevo estado (EN PROCESO, FINALIZADO, PENDIENTE):');
-            if (!estado) return;
-
-            try {
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'PUT',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        folio: currentFolio,
-                        estado: estado,
-                        notas: document.getElementById('projectDetails')?.value || ''
-                    })
-                });
-                showToast('Estado actualizado');
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('Error al actualizar', 'error');
-            }
+            showToast('Funcionalidad en desarrollo', 'info');
         };
 
-        // ===== TOAST =====
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
@@ -1001,19 +876,12 @@
             setTimeout(() => toast.classList.add('opacity-0'), 2800);
         }
 
-        // ===== INICIALIZACIÓN =====
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Primero intentamos cargar desde folio
-            const folioCargado = await loadFromFolio();
-            
-            // Si NO se cargó ningún folio, iniciamos vacío
-            if (!folioCargado) {
-                items = [];
-                renderItems();
-                calculateTotal();
-            }
-            
-            // Configurar cierre del buscador
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            loadFromFolio();
+            renderItems();
+            calculateTotal();
+
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('#materialSearch') && !e.target.closest('#searchResults')) {
                     document.getElementById('searchResults').classList.add('hidden');
