@@ -838,13 +838,13 @@
         <button class="nav-btn" id="prevBtn" onclick="previousStep()" disabled>
           <i class="fas fa-arrow-left"></i> Anterior
         </button>
-        <div class="text-cyan-400 font-bold" id="stepIndicator">Paso 1 / ?</div>
+        <div class="text-cyan-400 font-bold" id="stepIndicator">Paso 1 / 7</div>
         <button class="nav-btn" id="nextBtn" onclick="nextStep()">
           Siguiente <i class="fas fa-arrow-right"></i>
         </button>
       </div>
       
-      <button class="whatsapp-btn" id="whatsappBtn" onclick="sendToWhatsApp()" disabled>
+      <button class="whatsapp-btn" id="whatsappBtn" onclick="sendToWhatsApp()" disabled style="display: none;">
         <span>📱</span><span>enviar ficha técnica a WhatsApp</span>
       </button>
     </div>
@@ -857,8 +857,7 @@
   </div>
 
   <script>
-    // Configuración
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhRwQBM2PkaJDaRafjltp6eYHKbBTT6EuDxjPNlehO4m9nTlWUZoqZ4NKHoMhPYL_O/exec';
+    const APPS_SCRIPT_URL = 'URL_DE_TU_APPS_SCRIPT'; // ← REEMPLAZAR con tu URL de Apps Script
     
     const serviceConfig = {
       minisplit: { name: "minisplit · climatización", icon: "❄️", questions: [
@@ -897,8 +896,14 @@
 
     let currentService = null;
     let answers = {};
-    let currentQuestionIndex = 0;
-    let totalQuestions = 0;
+    let currentStep = 0;
+    let totalSteps = 0;
+    let clientData = {
+      nombre: '',
+      telefono: '',
+      direccion: '',
+      whatsapp: ''
+    };
 
     function toggleCard(id) {
       const card = document.getElementById(id);
@@ -910,46 +915,91 @@
     function openModal(key) {
       currentService = key;
       answers = {};
-      currentQuestionIndex = 0;
+      clientData = { nombre: '', telefono: '', direccion: '', whatsapp: '' };
+      currentStep = 0;
       
       const cfg = serviceConfig[key];
-      totalQuestions = cfg.questions.length;
+      totalSteps = cfg.questions.length + 3; // 4 preguntas + 3 datos cliente = 7
       
       document.getElementById('modalIcon').innerText = cfg.icon;
       document.getElementById('modalServiceName').innerText = cfg.name;
+      document.getElementById('stepIndicator').innerText = `Paso 1 / ${totalSteps}`;
       
-      renderCurrentQuestion();
+      renderStep();
       
       document.getElementById('diagnosticModal').style.display = 'flex';
       document.body.style.overflow = 'hidden';
-      
-      updateNavButtons();
     }
 
-    function renderCurrentQuestion() {
+    function renderStep() {
       const cfg = serviceConfig[currentService];
-      const question = cfg.questions[currentQuestionIndex];
-      
       const container = document.getElementById('questionsContainer');
+      const whatsappBtn = document.getElementById('whatsappBtn');
+      const modalNav = document.querySelector('.modal-nav');
       
-      let html = `
-        <div class="question-block">
-          <label class="question-label">${currentQuestionIndex + 1}. ${question.label}</label>
-          <div class="options-grid" id="q-${question.id}">
-      `;
+      // Ocultar WhatsApp por defecto
+      whatsappBtn.style.display = 'none';
+      modalNav.style.display = 'flex';
       
-      question.options.forEach(opt => {
-        const isSelected = answers[question.id] === opt;
-        html += `<button class="option-btn ${isSelected ? 'selected' : ''}" onclick="selectOption('${question.id}', '${opt}', this)">${opt}</button>`;
-      });
-      
-      html += `</div></div>`;
-      
-      container.innerHTML = html;
-      
-      document.getElementById('stepIndicator').innerText = `Paso ${currentQuestionIndex + 1} / ${totalQuestions}`;
+      if (currentStep < cfg.questions.length) {
+        // Paso de pregunta
+        const question = cfg.questions[currentStep];
+        let html = `
+          <div class="question-block">
+            <label class="question-label">${currentStep + 1}. ${question.label}</label>
+            <div class="options-grid" id="q-${question.id}">
+        `;
+        
+        question.options.forEach(opt => {
+          const isSelected = answers[question.id] === opt;
+          html += `<button class="option-btn ${isSelected ? 'selected' : ''}" onclick="selectOption('${question.id}', '${opt}', this)">${opt}</button>`;
+        });
+        
+        html += `</div></div>`;
+        container.innerHTML = html;
+        
+      } else if (currentStep < cfg.questions.length + 3) {
+        // Pasos de datos del cliente (3 pasos)
+        const dataStep = currentStep - cfg.questions.length;
+        let html = '';
+        
+        if (dataStep === 0) {
+          html = `
+            <div class="question-block">
+              <label class="question-label">${currentStep + 1}. Nombre completo</label>
+              <input type="text" id="clientNombre" placeholder="Ej: Juan Pérez" class="input-field w-full p-4 rounded-full text-base" value="${clientData.nombre}">
+            </div>`;
+        } else if (dataStep === 1) {
+          html = `
+            <div class="question-block">
+              <label class="question-label">${currentStep + 1}. Teléfono de contacto</label>
+              <input type="tel" id="clientTelefono" placeholder="Ej: 8112345678" class="input-field w-full p-4 rounded-full text-base" value="${clientData.telefono}">
+            </div>`;
+        } else if (dataStep === 2) {
+          html = `
+            <div class="question-block">
+              <label class="question-label">${currentStep + 1}. Dirección</label>
+              <input type="text" id="clientDireccion" placeholder="Ej: Calle, colonia, ciudad" class="input-field w-full p-4 rounded-full text-base" value="${clientData.direccion}">
+              <p class="text-xs text-cyan-400/70 mt-2">Opcional pero recomendado</p>
+            </div>`;
+        }
+        
+        container.innerHTML = html;
+        
+        // Restaurar valores si existen
+        setTimeout(() => {
+          if (dataStep === 0 && clientData.nombre) document.getElementById('clientNombre').value = clientData.nombre;
+          if (dataStep === 1 && clientData.telefono) document.getElementById('clientTelefono').value = clientData.telefono;
+          if (dataStep === 2 && clientData.direccion) document.getElementById('clientDireccion').value = clientData.direccion;
+        }, 50);
+        
+      } else {
+        // Resumen final
+        showSummary();
+      }
       
       updateNavButtons();
+      document.getElementById('stepIndicator').innerText = `Paso ${currentStep + 1} / ${totalSteps}`;
     }
 
     function selectOption(qId, val, btn) {
@@ -961,37 +1011,80 @@
 
     function nextStep() {
       const cfg = serviceConfig[currentService];
-      const currentQ = cfg.questions[currentQuestionIndex];
       
-      if (!answers[currentQ.id]) {
-        alert('Por favor selecciona una opción antes de continuar.');
-        return;
+      if (currentStep < cfg.questions.length) {
+        // Validar pregunta actual
+        const question = cfg.questions[currentStep];
+        if (!answers[question.id]) {
+          alert('Por favor selecciona una opción antes de continuar.');
+          return;
+        }
+      } else if (currentStep < cfg.questions.length + 3) {
+        // Validar datos del cliente
+        const dataStep = currentStep - cfg.questions.length;
+        
+        if (dataStep === 0) {
+          const nombre = document.getElementById('clientNombre')?.value.trim();
+          if (!nombre) {
+            alert('El nombre es obligatorio');
+            return;
+          }
+          clientData.nombre = nombre;
+        } else if (dataStep === 1) {
+          const telefono = document.getElementById('clientTelefono')?.value.trim();
+          clientData.telefono = telefono; // opcional
+        } else if (dataStep === 2) {
+          const direccion = document.getElementById('clientDireccion')?.value.trim();
+          clientData.direccion = direccion; // opcional
+        }
       }
       
-      if (currentQuestionIndex < totalQuestions - 1) {
-        currentQuestionIndex++;
-        renderCurrentQuestion();
+      if (currentStep < totalSteps - 1) {
+        currentStep++;
+        renderStep();
       } else {
         showSummary();
       }
     }
 
     function previousStep() {
-      if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
-        renderCurrentQuestion();
+      if (currentStep > 0) {
+        // Guardar datos del cliente antes de retroceder
+        if (currentStep >= serviceConfig[currentService].questions.length) {
+          const dataStep = currentStep - serviceConfig[currentService].questions.length;
+          if (dataStep === 0 && document.getElementById('clientNombre')) {
+            clientData.nombre = document.getElementById('clientNombre').value;
+          } else if (dataStep === 1 && document.getElementById('clientTelefono')) {
+            clientData.telefono = document.getElementById('clientTelefono').value;
+          } else if (dataStep === 2 && document.getElementById('clientDireccion')) {
+            clientData.direccion = document.getElementById('clientDireccion').value;
+          }
+        }
+        
+        currentStep--;
+        renderStep();
       }
     }
 
     function showSummary() {
       const cfg = serviceConfig[currentService];
       
-      let summaryHtml = '<div class="question-block"><h3 class="text-xl text-white mb-4">Resumen del diagnóstico</h3><div class="space-y-2">';
+      let summaryHtml = '<div class="question-block"><h3 class="text-xl text-white mb-4">📋 Resumen de tu solicitud</h3><div class="space-y-2 bg-black/30 p-4 rounded-2xl">';
       
+      // Datos del cliente
+      summaryHtml += `<div class="border-b border-cyan-500/20 pb-2 mb-2">
+        <p class="text-cyan-400 font-bold">👤 DATOS DEL CLIENTE</p>
+        <p class="text-white">${clientData.nombre || 'No proporcionado'}</p>
+        ${clientData.telefono ? `<p class="text-sm text-gray-400">📞 ${clientData.telefono}</p>` : ''}
+        ${clientData.direccion ? `<p class="text-sm text-gray-400">📍 ${clientData.direccion}</p>` : ''}
+      </div>`;
+      
+      // Diagnóstico
+      summaryHtml += `<p class="text-cyan-400 font-bold mb-2">🔧 DIAGNÓSTICO</p>`;
       cfg.questions.forEach(q => {
         summaryHtml += `<div class="flex justify-between border-b border-white/10 py-2">
-          <span class="text-cyan-200">${q.label}:</span>
-          <span class="text-white font-bold">${answers[q.id] || 'No respondido'}</span>
+          <span class="text-gray-400">${q.label}:</span>
+          <span class="text-white font-bold">${answers[q.id] || '—'}</span>
         </div>`;
       });
       
@@ -1001,6 +1094,7 @@
       document.querySelector('.modal-nav').style.display = 'none';
       
       const whatsappBtn = document.getElementById('whatsappBtn');
+      whatsappBtn.style.display = 'flex';
       whatsappBtn.disabled = false;
       whatsappBtn.innerHTML = '<span>📱</span><span>enviar ficha técnica a WhatsApp</span>';
     }
@@ -1008,43 +1102,31 @@
     function updateNavButtons() {
       const prevBtn = document.getElementById('prevBtn');
       const nextBtn = document.getElementById('nextBtn');
-      const whatsappBtn = document.getElementById('whatsappBtn');
       
-      prevBtn.disabled = currentQuestionIndex === 0;
+      prevBtn.disabled = currentStep === 0;
       
       const cfg = serviceConfig[currentService];
-      if (cfg) {
-        const currentQ = cfg.questions[currentQuestionIndex];
-        const hasAnswer = answers[currentQ.id] !== undefined;
-        
-        if (currentQuestionIndex < totalQuestions - 1) {
-          nextBtn.disabled = !hasAnswer;
-          nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+      
+      if (currentStep < cfg.questions.length) {
+        // Paso de pregunta
+        const question = cfg.questions[currentStep];
+        const hasAnswer = answers[question.id] !== undefined;
+        nextBtn.disabled = !hasAnswer;
+        nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
+      } else if (currentStep < cfg.questions.length + 3) {
+        // Paso de datos
+        nextBtn.disabled = false; // Habilitar siempre, la validación se hace en nextStep
+        if (currentStep === totalSteps - 1) {
+          nextBtn.innerHTML = 'Ver resumen <i class="fas fa-check"></i>';
         } else {
-          nextBtn.disabled = !hasAnswer;
-          nextBtn.innerHTML = 'Finalizar <i class="fas fa-check"></i>';
+          nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
         }
       }
-      
-      whatsappBtn.disabled = true;
-      document.querySelector('.modal-nav').style.display = 'flex';
     }
 
-    // ===== FUNCIÓN PRINCIPAL CORREGIDA =====
     async function sendToWhatsApp() {
       const cfg = serviceConfig[currentService];
       const phone = '5218131031445'; // Número del técnico
-      
-      // Solicitar datos adicionales
-      const nombreCliente = prompt('Por favor ingresa tu nombre completo:');
-      if (!nombreCliente) {
-        alert('El nombre es obligatorio');
-        return;
-      }
-      
-      const telefonoCliente = prompt('Ingresa tu teléfono (opcional):') || '';
-      const direccion = prompt('Ingresa tu dirección (opcional):') || '';
-      const whatsappCliente = prompt('Ingresa tu WhatsApp (opcional):') || '';
       
       // Generar folio único
       const ahora = new Date();
@@ -1057,10 +1139,10 @@
       // Construir objeto para enviar a Apps Script
       const datosParaCloud = {
         servicio: cfg.name,
-        nombreCliente: nombreCliente,
-        telefono: telefonoCliente,
-        direccion: direccion,
-        whatsappCliente: whatsappCliente,
+        nombreCliente: clientData.nombre,
+        telefono: clientData.telefono,
+        direccion: clientData.direccion,
+        whatsappCliente: clientData.whatsapp || clientData.telefono,
         respuestas: answers,
         folio: folio
       };
@@ -1071,7 +1153,7 @@
         datosParaCloud[`respuesta${index+1}`] = answers[q.id] || '';
       });
       
-      // Enviar a Google Sheets (en segundo plano)
+      // Enviar a Google Sheets
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -1079,18 +1161,17 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(datosParaCloud)
         });
-        console.log('✅ Datos guardados en la nube');
+        console.log('✅ Datos guardados en la nube con folio:', folio);
       } catch (error) {
         console.error('Error al guardar en nube:', error);
       }
       
-      // ===== CONSTRUIR FICHA COMPLETA PARA WHATSAPP =====
+      // Construir ficha para WhatsApp
       let mensaje = `🔧 *NUEVA COTIZACIÓN - MULTISERVICIOS SP* 🔧\n\n`;
       mensaje += `📋 *FOLIO:* ${folio}\n`;
-      mensaje += `👤 *CLIENTE:* ${nombreCliente}\n`;
-      if (telefonoCliente) mensaje += `📞 *TELÉFONO:* ${telefonoCliente}\n`;
-      if (whatsappCliente) mensaje += `📱 *WHATSAPP:* ${whatsappCliente}\n`;
-      if (direccion) mensaje += `📍 *DIRECCIÓN:* ${direccion}\n`;
+      mensaje += `👤 *CLIENTE:* ${clientData.nombre}\n`;
+      if (clientData.telefono) mensaje += `📞 *TELÉFONO:* ${clientData.telefono}\n`;
+      if (clientData.direccion) mensaje += `📍 *DIRECCIÓN:* ${clientData.direccion}\n`;
       mensaje += `🔨 *SERVICIO:* ${cfg.name}\n\n`;
       mensaje += `📊 *DIAGNÓSTICO:*\n`;
       
@@ -1100,14 +1181,13 @@
       
       mensaje += `\n⏱️ *FECHA:* ${ahora.toLocaleDateString('es-MX')}\n`;
       mensaje += `🕐 *HORA:* ${ahora.toLocaleTimeString('es-MX')}\n\n`;
-      mensaje += `_El técnico procesará esta solicitud y se comunicará contigo._`;
+      mensaje += `📌 *IMPORTANTE:* El técnico usará este folio (${folio}) para cargar tu cotización.\n`;
+      mensaje += `_Espera nuestra comunicación._`;
       
-      // IMPORTANTE: Abrir WhatsApp con el mensaje
+      // Abrir WhatsApp
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
-      console.log('Abriendo WhatsApp con URL:', url);
       window.open(url, '_blank');
       
-      // Cerrar modal después de enviar
       setTimeout(closeModal, 1000);
     }
 
@@ -1117,6 +1197,7 @@
       document.body.style.overflow = 'auto';
       const modalNav = document.querySelector('.modal-nav');
       if (modalNav) modalNav.style.display = 'flex';
+      document.getElementById('whatsappBtn').style.display = 'none';
     }
 
     document.addEventListener('keydown', (e) => { 
