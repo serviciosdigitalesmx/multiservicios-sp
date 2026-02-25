@@ -638,7 +638,7 @@
     <h1>INGENIERÍA DE MANTENIMIENTO<br><span>Diagnóstico predictivo y ejecución técnica.</span></h1>
     <p>⚡ respuesta 30 min · monterrey</p>
     <div class="services-grid">
-      <button class="service-btn" onclick="openModal('minisplit')"><span class="service-icon">❄️</span><div>Minisplit <small>carga / limpieza / vrf</small></div></button>
+      <button class="service-btn" onclick="openModal('minisplit')"><span class="service-icon">❄️</span><div>Minisplit <small>instalación / carga / limpieza</small></div></button>
       <button class="service-btn" onclick="openModal('plomeria')"><span class="service-icon">🚰</span><div>Plomería <small>destape hidráulico</small></div></button>
       <button class="service-btn" onclick="openModal('electricidad')"><span class="service-icon">⚡</span><div>Electricidad <small>tableros / tierras</small></div></button>
       <button class="service-btn" onclick="openModal('soldadura')"><span class="service-icon">🧱</span><div>Soldadura <small>estructura / portones</small></div></button>
@@ -730,11 +730,12 @@
           <span class="service-item-icon">❄️</span>
           <div>
             <h3>Minisplit / VRV</h3>
-            <p>carga de gas, limpieza profunda, electrónica</p>
+            <p>instalación, carga de gas, limpieza, electrónica</p>
           </div>
         </div>
         <div class="technical-layer" onclick="event.stopPropagation()">
           <div>
+            <span class="subservice-chip">Instalación</span>
             <span class="subservice-chip">R410A / R32</span>
             <span class="subservice-chip">Lavado químico</span>
             <span class="subservice-chip">Reparación de tarjetas</span>
@@ -857,15 +858,19 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJA9NRV4hiFOznVK7M4ftB0qFVD3G1_lxpn3N5htlVsQ5S6d50KCg60Xg3v1uovZSE/exec'; // ← REEMPLAZAR con tu URL de Apps Script
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJA9NRV4hiFOznVK7M4ftB0qFVD3G1_lxpn3N5htlVsQ5S6d50KCg60Xg3v1uovZSE/exec';
     
     const serviceConfig = {
-      minisplit: { name: "minisplit · climatización", icon: "❄️", questions: [
-        { id: "p1", label: "síntoma principal", options: ["no enfría", "ruido anómalo", "gotea agua", "no enciende", "hielo en tubería", "mantenimiento preventivo"] },
-        { id: "p2", label: "ubicación del equipo", options: ["casa", "oficina", "local comercial", "industria"] },
-        { id: "p3", label: "urgencia", options: ["hoy (emergencia)", "mañana", "esta semana", "programar"] },
-        { id: "p4", label: "cantidad de equipos", options: ["1", "2", "3-5", "+5"] }
-      ]},
+      minisplit: { 
+        name: "minisplit · climatización", 
+        icon: "❄️", 
+        questions: [
+          { id: "p1", label: "¿Qué necesitas?", options: ["Instalación de minisplit", "Mantenimiento / Limpieza", "Reparación / Falla", "Carga de gas", "No enfría", "Ruido anómalo", "Gotea agua", "No enciende"] },
+          { id: "p2", label: "ubicación del equipo", options: ["casa", "oficina", "local comercial", "industria"] },
+          { id: "p3", label: "urgencia", options: ["hoy (emergencia)", "mañana", "esta semana", "programar"] },
+          { id: "p4", label: "cantidad de equipos", options: ["1", "2", "3-5", "+5"] }
+        ]
+      },
       plomeria: { name: "plomería / destape", icon: "🚰", questions: [
         { id: "p1", label: "problema", options: ["caño tapado", "fuga de agua", "wc tapado", "grifo gotea", "tubería rota"] },
         { id: "p2", label: "zona afectada", options: ["cocina", "baño", "patio", "exterior"] },
@@ -937,12 +942,10 @@
       const whatsappBtn = document.getElementById('whatsappBtn');
       const modalNav = document.querySelector('.modal-nav');
       
-      // Ocultar WhatsApp por defecto
       whatsappBtn.style.display = 'none';
       modalNav.style.display = 'flex';
       
       if (currentStep < cfg.questions.length) {
-        // Paso de pregunta
         const question = cfg.questions[currentStep];
         let html = `
           <div class="question-block">
@@ -959,7 +962,6 @@
         container.innerHTML = html;
         
       } else if (currentStep < cfg.questions.length + 3) {
-        // Pasos de datos del cliente (3 pasos)
         const dataStep = currentStep - cfg.questions.length;
         let html = '';
         
@@ -986,7 +988,6 @@
         
         container.innerHTML = html;
         
-        // Restaurar valores si existen
         setTimeout(() => {
           if (dataStep === 0 && clientData.nombre) document.getElementById('clientNombre').value = clientData.nombre;
           if (dataStep === 1 && clientData.telefono) document.getElementById('clientTelefono').value = clientData.telefono;
@@ -994,7 +995,6 @@
         }, 50);
         
       } else {
-        // Resumen final
         showSummary();
       }
       
@@ -1013,14 +1013,12 @@
       const cfg = serviceConfig[currentService];
       
       if (currentStep < cfg.questions.length) {
-        // Validar pregunta actual
         const question = cfg.questions[currentStep];
         if (!answers[question.id]) {
           alert('Por favor selecciona una opción antes de continuar.');
           return;
         }
       } else if (currentStep < cfg.questions.length + 3) {
-        // Validar datos del cliente
         const dataStep = currentStep - cfg.questions.length;
         
         if (dataStep === 0) {
@@ -1032,10 +1030,10 @@
           clientData.nombre = nombre;
         } else if (dataStep === 1) {
           const telefono = document.getElementById('clientTelefono')?.value.trim();
-          clientData.telefono = telefono; // opcional
+          clientData.telefono = telefono;
         } else if (dataStep === 2) {
           const direccion = document.getElementById('clientDireccion')?.value.trim();
-          clientData.direccion = direccion; // opcional
+          clientData.direccion = direccion;
         }
       }
       
@@ -1049,7 +1047,6 @@
 
     function previousStep() {
       if (currentStep > 0) {
-        // Guardar datos del cliente antes de retroceder
         if (currentStep >= serviceConfig[currentService].questions.length) {
           const dataStep = currentStep - serviceConfig[currentService].questions.length;
           if (dataStep === 0 && document.getElementById('clientNombre')) {
@@ -1071,7 +1068,6 @@
       
       let summaryHtml = '<div class="question-block"><h3 class="text-xl text-white mb-4">📋 Resumen de tu solicitud</h3><div class="space-y-2 bg-black/30 p-4 rounded-2xl">';
       
-      // Datos del cliente
       summaryHtml += `<div class="border-b border-cyan-500/20 pb-2 mb-2">
         <p class="text-cyan-400 font-bold">👤 DATOS DEL CLIENTE</p>
         <p class="text-white">${clientData.nombre || 'No proporcionado'}</p>
@@ -1079,7 +1075,6 @@
         ${clientData.direccion ? `<p class="text-sm text-gray-400">📍 ${clientData.direccion}</p>` : ''}
       </div>`;
       
-      // Diagnóstico
       summaryHtml += `<p class="text-cyan-400 font-bold mb-2">🔧 DIAGNÓSTICO</p>`;
       cfg.questions.forEach(q => {
         summaryHtml += `<div class="flex justify-between border-b border-white/10 py-2">
@@ -1108,14 +1103,12 @@
       const cfg = serviceConfig[currentService];
       
       if (currentStep < cfg.questions.length) {
-        // Paso de pregunta
         const question = cfg.questions[currentStep];
         const hasAnswer = answers[question.id] !== undefined;
         nextBtn.disabled = !hasAnswer;
         nextBtn.innerHTML = 'Siguiente <i class="fas fa-arrow-right"></i>';
       } else if (currentStep < cfg.questions.length + 3) {
-        // Paso de datos
-        nextBtn.disabled = false; // Habilitar siempre, la validación se hace en nextStep
+        nextBtn.disabled = false;
         if (currentStep === totalSteps - 1) {
           nextBtn.innerHTML = 'Ver resumen <i class="fas fa-check"></i>';
         } else {
@@ -1126,9 +1119,8 @@
 
     async function sendToWhatsApp() {
       const cfg = serviceConfig[currentService];
-      const phone = '5218131031445'; // Número del técnico
+      const phone = '5218131031445';
       
-      // Generar folio único
       const ahora = new Date();
       const year = ahora.getFullYear().toString().slice(-2);
       const month = (ahora.getMonth() + 1).toString().padStart(2, '0');
@@ -1136,7 +1128,6 @@
       const random = Math.floor(Math.random() * 9000 + 1000);
       const folio = `COT-${year}${month}${day}-${random}`;
       
-      // Construir objeto para enviar a Apps Script
       const datosParaCloud = {
         servicio: cfg.name,
         nombreCliente: clientData.nombre,
@@ -1147,13 +1138,11 @@
         folio: folio
       };
       
-      // Agregar preguntas y respuestas individuales
       cfg.questions.forEach((q, index) => {
         datosParaCloud[`pregunta${index+1}`] = q.label;
         datosParaCloud[`respuesta${index+1}`] = answers[q.id] || '';
       });
       
-      // Enviar a Google Sheets
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -1166,7 +1155,6 @@
         console.error('Error al guardar en nube:', error);
       }
       
-      // Construir ficha para WhatsApp
       let mensaje = `🔧 *NUEVA COTIZACIÓN - MULTISERVICIOS SP* 🔧\n\n`;
       mensaje += `📋 *FOLIO:* ${folio}\n`;
       mensaje += `👤 *CLIENTE:* ${clientData.nombre}\n`;
@@ -1184,7 +1172,6 @@
       mensaje += `📌 *IMPORTANTE:* El técnico usará este folio (${folio}) para cargar tu cotización.\n`;
       mensaje += `_Espera nuestra comunicación._`;
       
-      // Abrir WhatsApp
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
       window.open(url, '_blank');
       
