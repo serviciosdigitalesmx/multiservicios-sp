@@ -186,28 +186,38 @@ function doPost(e) {
     lock.waitLock(10000);
     const ss = getSpreadsheet();
     const data = parseRequestBody(e);
+    const action = String(data.action || '').trim();
 
-    if (data.action === 'updateStatus') {
+    if (action === 'updateStatus') {
       return handleUpdateStatus(data, ss);
     }
 
-    if (data.action === 'nuevaSolicitud') {
+    if (action === 'nuevaSolicitud') {
       return handleNuevaSolicitud(data, ss);
     }
 
-    if (data.action === 'marcarSolicitudCotizando') {
+    if (action === 'marcarSolicitudCotizando') {
       return handleMarcarSolicitudCotizando(data, ss);
     }
 
-    if (data.action === 'cotizarSolicitud') {
+    if (action === 'cotizarSolicitud' || action === 'cotizacion') {
       return handleCotizarSolicitud(data, ss);
     }
 
-    if (data.action === 'programarServicio') {
+    if (action === 'programarServicio') {
       return handleProgramarServicio(data, ss);
     }
 
-    return handleNewCotizacion(data, ss);
+    if (action === 'nuevaCotizacion') {
+      return handleNewCotizacion(data, ss);
+    }
+
+    // Compatibilidad con clientes legacy que no envian action.
+    if (!action && (data.servicio || data.nombreCliente)) {
+      return handleNewCotizacion(data, ss);
+    }
+
+    throw new Error('Accion no soportada: ' + action);
   } catch (error) {
     return createCorsResponse({
       success: false,
@@ -546,6 +556,54 @@ function handleUpdateStatus(data, ss) {
   throw new Error('Folio no encontrado');
 }
 
+function handleGetCotizaciones(ss) {
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COTIZACIONES);
+  if (!sheet) {
+    return createCorsResponse({ success: true, cotizaciones: [] });
+  }
+
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) {
+    return createCorsResponse({ success: true, cotizaciones: [] });
+  }
+
+  const cotizaciones = [];
+  for (let i = 1; i < values.length; i++) {
+    const rawPayload = String(values[i][15] || '').trim();
+    let payload = {};
+
+    if (rawPayload) {
+      try {
+        payload = JSON.parse(rawPayload);
+      } catch (_) {}
+    }
+
+    const totalFromPayload = Number(payload.total || 0);
+    const totalFromNotas = Number(String(values[i][18] || '').replace('TOTAL:', '')) || 0;
+    cotizaciones.push({
+      idCotizacion: values[i][0] || '',
+      timestamp: values[i][1] || '',
+      servicio: values[i][2] || '',
+      cliente: values[i][3] || '',
+      telefono: values[i][4] || '',
+      direccion: values[i][5] || '',
+      idSolicitud: payload.idSolicitud || '',
+      estado: values[i][17] || 'NUEVA',
+      total: totalFromPayload || totalFromNotas,
+      folio: values[i][16] || ''
+    });
+  }
+
+  cotizaciones.sort(function (a, b) {
+    return new Date(b.timestamp) - new Date(a.timestamp);
+  });
+
+  return createCorsResponse({
+    success: true,
+    cotizaciones: cotizaciones
+  });
+}
+
 function doGet(e) {
   try {
     const ss = getSpreadsheet();
@@ -565,6 +623,10 @@ function doGet(e) {
 
     if (p.action === 'agenda') {
       return handleGetAgenda(ss);
+    }
+
+    if (p.action === 'cotizaciones') {
+      return handleGetCotizaciones(ss);
     }
 
     if (typeof p.materiales !== 'undefined') {
