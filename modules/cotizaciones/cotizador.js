@@ -6,6 +6,46 @@
     return '$' + Number(value || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function escapeHtml(value) {
+    return String(value || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  async function cargarCotizacionesRegistradas() {
+    const tbody = document.querySelector('#tablaCotizaciones tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
+    try {
+      const payload = await window.api('/cotizaciones');
+      if (!payload || !payload.success) {
+        throw new Error(payload && payload.error ? payload.error : 'Respuesta inválida');
+      }
+
+      const list = Array.isArray(payload.cotizaciones) ? payload.cotizaciones : [];
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">Sin cotizaciones registradas.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map(function (c) {
+        return '<tr>' +
+          '<td>' + escapeHtml(c.idCotizacion) + '</td>' +
+          '<td>' + escapeHtml(c.cliente) + '</td>' +
+          '<td>' + escapeHtml(c.servicio) + '</td>' +
+          '<td>' + escapeHtml(c.estado || 'NUEVA') + '</td>' +
+          '<td>' + escapeHtml(formatMoney(c.total || 0)) + '</td>' +
+          '</tr>';
+      }).join('');
+    } catch (error) {
+      tbody.innerHTML = '<tr><td colspan="5">Error al cargar cotizaciones: ' + escapeHtml(error.message || error) + '</td></tr>';
+    }
+  }
+
   function conceptoRow(data) {
     const row = document.createElement('div');
     row.className = 'grid2';
@@ -105,6 +145,7 @@
     document.getElementById('cotizadorHint').textContent = 'Cotización creada: ' + idCotizacion;
     document.getElementById('pdfCotBtn').disabled = false;
     document.getElementById('programarSrvBtn').disabled = false;
+    await cargarCotizacionesRegistradas();
     alert('Cotización guardada: ' + idCotizacion);
   }
 
@@ -180,6 +221,13 @@
     alert('Servicio programado: ' + payload.idServicio);
     window.loadModule('servicios');
   }
+
+  const refreshCotizacionesBtn = document.getElementById('refreshCotizacionesBtn');
+  if (refreshCotizacionesBtn) {
+    refreshCotizacionesBtn.addEventListener('click', cargarCotizacionesRegistradas);
+  }
+
+  cargarCotizacionesRegistradas();
 
   resolveSolicitud().catch(function (err) {
     const hint = document.getElementById('cotizadorHint');

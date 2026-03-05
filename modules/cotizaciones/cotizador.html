@@ -2,6 +2,29 @@
   <h2 class="module-title">Cotizaciones</h2>
   <p class="module-muted" id="cotizadorHint">Selecciona una solicitud para comenzar.</p>
 
+  <div class="panel-card" style="margin-bottom:12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <h3 style="margin:0;">Cotizaciones recientes</h3>
+      <button type="button" id="refreshCotizacionesBtn" class="btn-secondary">Actualizar lista</button>
+    </div>
+    <div style="overflow:auto;margin-top:10px;">
+      <table class="solicitudes-table" id="tablaCotizaciones">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Estado</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="5">Cargando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <div class="panel-card" id="cotizadorPanel" style="display:none;">
     <div class="grid2">
       <div>

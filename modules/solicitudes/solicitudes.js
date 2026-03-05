@@ -46,7 +46,15 @@
         btn.addEventListener('click', async function () {
           const idSolicitud = btn.getAttribute('data-id');
           window.__selectedSolicitudId = idSolicitud;
-          await window.api('/marcarSolicitudCotizando', { idSolicitud: idSolicitud });
+          try {
+            const payload = await window.api('/marcarSolicitudCotizando', { idSolicitud: idSolicitud });
+            if (!payload || !payload.success) {
+              throw new Error(payload && payload.error ? payload.error : 'No se pudo actualizar el estado');
+            }
+          } catch (err) {
+            // No bloqueamos el flujo de cotización si falla el cambio de estado.
+            console.error('No se pudo marcar la solicitud como cotizando:', err);
+          }
           window.loadModule('cotizaciones');
         });
       });
