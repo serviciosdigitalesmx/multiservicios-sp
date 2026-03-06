@@ -1,0 +1,21 @@
+<section class="module-view">
+  <h2 class="module-title">Archivados</h2>
+  <p class="module-muted">Historial de solicitudes y cotizaciones cerradas.</p>
+
+  <div class="panel-card" style="margin-bottom:16px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" id="tabSolicitudesArch" class="btn-primary">Solicitudes archivadas</button>
+      <button type="button" id="tabCotizacionesArch" class="btn-secondary">Cotizaciones archivadas</button>
+      <button type="button" id="refreshArchivados" class="btn-secondary"><i class="fas fa-sync-alt"></i> Actualizar</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="solicitudes-table" id="tablaArchivados">
+      <thead id="theadArchivados"></thead>
+      <tbody id="tbodyArchivados">
+        <tr><td>Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>

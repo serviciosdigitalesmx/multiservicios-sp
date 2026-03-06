@@ -220,6 +220,14 @@ function doPost(e) {
       return handleCrearCotizacionManual(data, ss);
     }
 
+    if (action === 'archiveSolicitud') {
+      return handleArchiveSolicitud(data, ss);
+    }
+
+    if (action === 'archiveCotizacion') {
+      return handleArchiveCotizacion(data, ss);
+    }
+
     if (action === 'nuevaCotizacion') {
       return handleNewCotizacion(data, ss);
     }
@@ -605,6 +613,42 @@ function handleEliminarCotizacion(data, ss) {
   throw new Error('Cotizacion no encontrada');
 }
 
+function handleArchiveSolicitud(data, ss) {
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAMES.SOLICITUDES);
+  if (!sheet) throw new Error('No existe la hoja de solicitudes');
+
+  const idSolicitud = String(data.idSolicitud || '').trim();
+  if (!idSolicitud) throw new Error('idSolicitud es obligatorio');
+
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0] || '').trim() === idSolicitud) {
+      sheet.getRange(i + 1, 7).setValue('ARCHIVADA');
+      logEvent(ss, 'SOLICITUD', idSolicitud, 'Solicitud archivada');
+      return createCorsResponse({ success: true, message: 'Solicitud archivada' });
+    }
+  }
+  throw new Error('Solicitud no encontrada');
+}
+
+function handleArchiveCotizacion(data, ss) {
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COTIZACIONES);
+  if (!sheet) throw new Error('No existe la hoja de cotizaciones');
+
+  const idCotizacion = String(data.idCotizacion || '').trim();
+  if (!idCotizacion) throw new Error('idCotizacion es obligatorio');
+
+  const values = sheet.getDataRange().getValues();
+  for (let i = 1; i < values.length; i++) {
+    if (String(values[i][0] || '').trim() === idCotizacion) {
+      sheet.getRange(i + 1, 18).setValue('ARCHIVADA');
+      logEvent(ss, 'COTIZACION', idCotizacion, 'Cotizacion archivada');
+      return createCorsResponse({ success: true, message: 'Cotizacion archivada' });
+    }
+  }
+  throw new Error('Cotizacion no encontrada');
+}
+
 function handleCrearCotizacionManual(data, ss) {
   const cotSheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COTIZACIONES);
   if (!cotSheet) {
@@ -776,6 +820,9 @@ function handleGetCotizaciones(ss) {
 
     const totalFromPayload = Number(payload.total || 0);
     const totalFromNotas = Number(String(values[i][18] || '').replace('TOTAL:', '')) || 0;
+    const estado = String(values[i][17] || 'NUEVA');
+    if (estado.toUpperCase() === 'ARCHIVADA') continue;
+
     cotizaciones.push({
       idCotizacion: values[i][0] || '',
       timestamp: values[i][1] || '',
@@ -784,7 +831,7 @@ function handleGetCotizaciones(ss) {
       telefono: values[i][4] || '',
       direccion: values[i][5] || '',
       idSolicitud: payload.idSolicitud || '',
-      estado: values[i][17] || 'NUEVA',
+      estado: estado,
       total: totalFromPayload || totalFromNotas,
       folio: values[i][16] || ''
     });
@@ -798,6 +845,53 @@ function handleGetCotizaciones(ss) {
     success: true,
     cotizaciones: cotizaciones
   });
+}
+
+function handleGetCotizacionesArchivadas(ss) {
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAMES.COTIZACIONES);
+  if (!sheet) {
+    return createCorsResponse({ success: true, cotizaciones: [] });
+  }
+
+  const values = sheet.getDataRange().getValues();
+  if (values.length <= 1) {
+    return createCorsResponse({ success: true, cotizaciones: [] });
+  }
+
+  const cotizaciones = [];
+  for (let i = 1; i < values.length; i++) {
+    const estado = String(values[i][17] || '').toUpperCase().trim();
+    if (estado !== 'ARCHIVADA') continue;
+
+    const rawPayload = String(values[i][15] || '').trim();
+    let payload = {};
+    if (rawPayload) {
+      try {
+        payload = JSON.parse(rawPayload);
+      } catch (_) {}
+    }
+
+    const totalFromPayload = Number(payload.total || 0);
+    const totalFromNotas = Number(String(values[i][18] || '').replace('TOTAL:', '')) || 0;
+    cotizaciones.push({
+      idCotizacion: values[i][0] || '',
+      timestamp: values[i][1] || '',
+      servicio: values[i][2] || '',
+      cliente: values[i][3] || '',
+      telefono: values[i][4] || '',
+      direccion: values[i][5] || '',
+      idSolicitud: payload.idSolicitud || '',
+      estado: values[i][17] || 'ARCHIVADA',
+      total: totalFromPayload || totalFromNotas,
+      folio: values[i][16] || ''
+    });
+  }
+
+  cotizaciones.sort(function (a, b) {
+    return new Date(b.timestamp) - new Date(a.timestamp);
+  });
+
+  return createCorsResponse({ success: true, cotizaciones: cotizaciones });
 }
 
 function doGet(e) {
@@ -823,6 +917,14 @@ function doGet(e) {
 
     if (p.action === 'cotizaciones') {
       return handleGetCotizaciones(ss);
+    }
+
+    if (p.action === 'solicitudesArchivadas') {
+      return handleGetSolicitudesArchivadas(ss);
+    }
+
+    if (p.action === 'cotizacionesArchivadas') {
+      return handleGetCotizacionesArchivadas(ss);
     }
 
     if (typeof p.materiales !== 'undefined') {
@@ -859,6 +961,9 @@ function handleGetSolicitudes(ss) {
 
   const solicitudes = [];
   for (let i = 1; i < data.length; i++) {
+    const estado = String(data[i][6] || '').trim().toUpperCase();
+    if (estado === 'ARCHIVADA') continue;
+
     solicitudes.push({
       id: data[i][0] || '',
       timestamp: data[i][1] || '',
@@ -879,6 +984,40 @@ function handleGetSolicitudes(ss) {
     success: true,
     solicitudes: solicitudes
   });
+}
+
+function handleGetSolicitudesArchivadas(ss) {
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAMES.SOLICITUDES);
+  if (!sheet) {
+    return createCorsResponse({ success: true, solicitudes: [] });
+  }
+
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) {
+    return createCorsResponse({ success: true, solicitudes: [] });
+  }
+
+  const solicitudes = [];
+  for (let i = 1; i < data.length; i++) {
+    const estado = String(data[i][6] || '').trim().toUpperCase();
+    if (estado !== 'ARCHIVADA') continue;
+    solicitudes.push({
+      id: data[i][0] || '',
+      timestamp: data[i][1] || '',
+      cliente: data[i][2] || '',
+      telefono: data[i][3] || '',
+      servicio: data[i][4] || '',
+      direccion: data[i][5] || '',
+      estado: data[i][6] || '',
+      notas: data[i][7] || ''
+    });
+  }
+
+  solicitudes.sort(function (a, b) {
+    return new Date(b.timestamp) - new Date(a.timestamp);
+  });
+
+  return createCorsResponse({ success: true, solicitudes: solicitudes });
 }
 
 function handleGetDashboard(ss) {

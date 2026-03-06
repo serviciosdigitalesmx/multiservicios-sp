@@ -47,7 +47,9 @@ function cloneSafe(value) {
 function shouldUseCache(action) {
   return action === 'dashboard' ||
     action === 'solicitudes' ||
+    action === 'solicitudesArchivadas' ||
     action === 'cotizaciones' ||
+    action === 'cotizacionesArchivadas' ||
     action === 'servicios' ||
     action === 'agenda';
 }

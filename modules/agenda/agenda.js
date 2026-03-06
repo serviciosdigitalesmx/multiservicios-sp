@@ -27,10 +27,14 @@
     const dates = Object.keys(groups).sort();
     wrap.innerHTML = '<div class="agenda-grid">' + dates.map(function (date) {
       const items = groups[date].map(function (s) {
+        const wa = window.WAUtils
+          ? window.WAUtils.makeButtonHtml({ phone: s.telefono, folio: s.idCotizacion || s.id, cliente: s.cliente, className: 'btn-secondary', compact: true })
+          : '';
         return '<div class="agenda-item">' +
           '<div><strong>' + e(s.hora || '--:--') + '</strong> · ' + e(s.servicio) + '</div>' +
           '<div>' + e(s.cliente) + ' · ' + e(s.tecnico) + '</div>' +
           '<div class="agenda-status">' + e(s.estado || 'Programado') + '</div>' +
+          '<div style="margin-top:6px;">' + wa + '</div>' +
           '</div>';
       }).join('');
       return '<article class="agenda-day-card">' +
@@ -38,6 +42,10 @@
         '<div class="agenda-day-items">' + items + '</div>' +
         '</article>';
     }).join('') + '</div>';
+
+    if (window.WAUtils) {
+      window.WAUtils.bind(wrap);
+    }
   }
 
   cargarAgenda().catch(function (err) {

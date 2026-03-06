@@ -33,14 +33,25 @@
       }
 
       tbody.innerHTML = solicitudes.map(function (s) {
+        const wa = window.WAUtils
+          ? window.WAUtils.makeButtonHtml({ phone: s.telefono, folio: s.id, cliente: s.cliente, className: 'btn-secondary', compact: true })
+          : '';
         return '<tr>' +
           '<td>' + escapeHtml(s.id) + '</td>' +
           '<td>' + escapeHtml(s.cliente) + '</td>' +
           '<td>' + escapeHtml(s.servicio) + '</td>' +
           '<td><span class="estado-pill ' + estadoClass(s.estado) + '">' + escapeHtml(s.estado || 'Nueva') + '</span></td>' +
-          '<td><button type="button" class="solicitudes-action" data-id="' + escapeHtml(s.id) + '">Cotizar</button></td>' +
+          '<td style="display:flex;gap:6px;flex-wrap:wrap;">' +
+          '<button type="button" class="solicitudes-action" data-id="' + escapeHtml(s.id) + '">Cotizar</button>' +
+          '<button type="button" class="btn-secondary sol-archive" data-id="' + escapeHtml(s.id) + '"><i class="fas fa-archive"></i></button>' +
+          wa +
+          '</td>' +
           '</tr>';
       }).join('');
+
+      if (window.WAUtils) {
+        window.WAUtils.bind(tbody);
+      }
 
       tbody.querySelectorAll('.solicitudes-action').forEach(function (btn) {
         btn.addEventListener('click', async function () {
@@ -56,6 +67,23 @@
             console.error('No se pudo marcar la solicitud como cotizando:', err);
           }
           window.loadModule('cotizaciones');
+        });
+      });
+
+      tbody.querySelectorAll('.sol-archive').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const idSolicitud = btn.getAttribute('data-id');
+          const ok = confirm('¿Archivar solicitud ' + idSolicitud + '?');
+          if (!ok) return;
+          try {
+            const payload = await window.api('/archiveSolicitud', { idSolicitud: idSolicitud });
+            if (!payload || !payload.success) {
+              throw new Error(payload && payload.error ? payload.error : 'No se pudo archivar');
+            }
+            await cargarSolicitudes(true);
+          } catch (err) {
+            alert('Error: ' + (err.message || err));
+          }
         });
       });
     } catch (error) {

@@ -4,7 +4,8 @@
     solicitudes: { html: 'solicitudes.html', js: 'solicitudes.js', css: 'solicitudes.css', title: 'Solicitudes' },
     cotizaciones: { html: 'cotizador.html', js: 'cotizador.js', title: 'Cotizaciones' },
     servicios: { html: 'servicios.html', js: 'servicios.js', title: 'Servicios' },
-    agenda: { html: 'agenda.html', js: 'agenda.js', title: 'Agenda' }
+    agenda: { html: 'agenda.html', js: 'agenda.js', title: 'Agenda' },
+    archivados: { html: 'archivados.html', js: 'archivados.js', title: 'Archivados' }
   };
 
   const loadedStyles = new Set();
@@ -109,7 +110,9 @@
     window.apiPreload([
       '/dashboard',
       '/solicitudes',
+      '/solicitudesArchivadas',
       '/cotizaciones',
+      '/cotizacionesArchivadas',
       '/servicios',
       '/agenda'
     ]);

@@ -77,15 +77,21 @@
 
       tbody.innerHTML = list.map(function (c) {
         const delBtn = '<button type="button" class="btn-secondary cot-delete" data-id="' + escapeHtml(c.idCotizacion) + '"><i class="fas fa-trash-alt"></i></button>';
+        const archBtn = '<button type="button" class="btn-secondary cot-archive" data-id="' + escapeHtml(c.idCotizacion) + '"><i class="fas fa-archive"></i></button>';
+        const waBtn = window.WAUtils
+          ? window.WAUtils.makeButtonHtml({ phone: c.telefono, folio: c.idCotizacion, cliente: c.cliente, className: 'btn-secondary', compact: true })
+          : '';
         return '<tr>' +
           '<td>' + escapeHtml(c.idCotizacion) + '</td>' +
           '<td>' + escapeHtml(c.cliente) + '</td>' +
           '<td>' + escapeHtml(c.servicio) + '</td>' +
           '<td>' + escapeHtml(c.estado || 'NUEVA') + '</td>' +
           '<td>' + escapeHtml(formatMoney(c.total || 0)) + '</td>' +
-          '<td>' + delBtn + '</td>' +
+          '<td style="display:flex;gap:6px;flex-wrap:wrap;">' + archBtn + delBtn + waBtn + '</td>' +
           '</tr>';
       }).join('');
+
+      if (window.WAUtils) window.WAUtils.bind(tbody);
 
       tbody.querySelectorAll('.cot-delete').forEach(function (btn) {
         btn.addEventListener('click', async function () {
@@ -93,6 +99,23 @@
             await eliminarCotizacion(btn.getAttribute('data-id'));
           } catch (error) {
             alert('Error al eliminar: ' + (error.message || error));
+          }
+        });
+      });
+
+      tbody.querySelectorAll('.cot-archive').forEach(function (btn) {
+        btn.addEventListener('click', async function () {
+          const idCotizacion = btn.getAttribute('data-id');
+          const ok = confirm('¿Archivar cotización ' + idCotizacion + '?');
+          if (!ok) return;
+          try {
+            const payload = await window.api('/archiveCotizacion', { idCotizacion: idCotizacion });
+            if (!payload || !payload.success) {
+              throw new Error(payload && payload.error ? payload.error : 'No se pudo archivar');
+            }
+            await cargarCotizacionesRegistradas(true);
+          } catch (error) {
+            alert('Error al archivar: ' + (error.message || error));
           }
         });
       });
