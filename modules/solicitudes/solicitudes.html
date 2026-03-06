@@ -21,4 +21,64 @@
       <tbody></tbody>
     </table>
   </div>
+
+  <div class="panel-card" id="solCotizadorPanel" style="display:none; margin-top:16px;">
+    <h3 style="margin-top:0;">Cotización Inline</h3>
+    <p id="solCotizadorHint" class="module-muted" style="margin-bottom:12px;border:0;padding:0;">Selecciona una solicitud para cotizar.</p>
+
+    <div class="grid2">
+      <div>
+        <label>Cliente</label>
+        <input id="solCotCliente" class="input-lite" type="text" readonly>
+      </div>
+      <div>
+        <label>Teléfono</label>
+        <input id="solCotTelefono" class="input-lite" type="text" readonly>
+      </div>
+      <div>
+        <label>Servicio</label>
+        <input id="solCotServicio" class="input-lite" type="text" readonly>
+      </div>
+      <div>
+        <label>Dirección</label>
+        <input id="solCotDireccion" class="input-lite" type="text" readonly>
+      </div>
+    </div>
+
+    <div class="panel-card" style="margin-top:12px;">
+      <h4 style="margin-top:0;">Conceptos</h4>
+      <div id="solConceptosWrap"></div>
+      <button type="button" class="btn-secondary" id="solAddConceptoBtn" style="margin-top:8px;">
+        <i class="fas fa-plus-circle"></i> Agregar concepto
+      </button>
+      <div style="margin-top:10px;">
+        <label>Diagnóstico</label>
+        <textarea id="solCotDiagnostico" class="input-lite" rows="3" placeholder="Describe hallazgos técnicos"></textarea>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+        <strong>Total:</strong>
+        <strong id="solCotTotal">$0.00</strong>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <button type="button" id="solGuardarCotBtn" class="btn-primary"><i class="fas fa-save"></i> Guardar cotización</button>
+      <button type="button" id="solProgramarBtn" class="btn-secondary" disabled><i class="fas fa-calendar-check"></i> Programar servicio</button>
+    </div>
+
+    <div class="grid2" style="margin-top:12px;">
+      <div>
+        <label>Fecha servicio</label>
+        <input id="solSrvFecha" class="input-lite" type="date">
+      </div>
+      <div>
+        <label>Hora servicio</label>
+        <input id="solSrvHora" class="input-lite" type="time">
+      </div>
+      <div>
+        <label>Técnico</label>
+        <input id="solSrvTecnico" class="input-lite" type="text" placeholder="Nombre del técnico">
+      </div>
+    </div>
+  </div>
 </section>

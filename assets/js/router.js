@@ -2,7 +2,7 @@
   const MODULE_CONFIG = {
     dashboard: { html: 'dashboard.html', js: 'dashboard.js', css: 'dashboard.css', title: 'Tablero' },
     solicitudes: { html: 'solicitudes.html', js: 'solicitudes.js', css: 'solicitudes.css', title: 'Solicitudes' },
-    cotizaciones: { html: 'cotizador.html', js: 'cotizador.js', title: 'Cotizaciones' },
+    cotizaciones: { html: 'cotizador.html', js: 'cotizador.js', title: 'Cotización manual' },
     servicios: { html: 'servicios.html', js: 'servicios.js', title: 'Servicios' },
     agenda: { html: 'agenda.html', js: 'agenda.js', title: 'Agenda' },
     archivados: { html: 'archivados.html', js: 'archivados.js', title: 'Archivados' }

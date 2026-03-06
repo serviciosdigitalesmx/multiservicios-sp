@@ -1,40 +1,9 @@
 <section class="module-view">
-  <h2 class="module-title">Cotizaciones</h2>
-  <p class="module-muted" id="cotizadorHint">Selecciona una solicitud para comenzar.</p>
+  <h2 class="module-title">Cotización manual</h2>
+  <p class="module-muted" id="cotizadorHint">Genera cotizaciones directas sin necesidad de solicitud previa.</p>
 
-  <div class="panel-card" style="margin-bottom:20px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap; margin-bottom:16px;">
-      <h3 style="margin:0; font-size:1.2rem;">Cotizaciones recientes</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button type="button" id="nuevaCotizacionManualBtn" class="btn-primary">
-          <i class="fas fa-plus"></i> Nueva cotización manual
-        </button>
-        <button type="button" id="refreshCotizacionesBtn" class="btn-secondary">
-          <i class="fas fa-sync-alt"></i> Actualizar lista
-        </button>
-      </div>
-    </div>
-    <div class="table-wrap" style="margin-top:0;">
-      <table class="solicitudes-table" id="tablaCotizaciones">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Servicio</th>
-            <th>Estado</th>
-            <th>Total</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td colspan="6">Cargando...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="panel-card" id="cotizadorPanel" style="display:none; margin-top:24px;">
-    <h3 style="margin-top:0; margin-bottom:16px;">Nueva cotización</h3>
+  <div class="panel-card" id="cotizadorPanel" style="margin-top:12px;">
+    <h3 style="margin-top:0; margin-bottom:16px;">Nueva cotización manual</h3>
     <div class="grid2">
       <div>
         <label class="input-group"><i class="far fa-user"></i> Cliente</label>
@@ -73,6 +42,9 @@
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 10px;">
       <button type="button" id="guardarCotBtn" class="btn-primary">
         <i class="fas fa-save"></i> Guardar cotización
+      </button>
+      <button type="button" id="cotWhatsBtn" class="btn-secondary">
+        <i class="fab fa-whatsapp"></i> WhatsApp cliente
       </button>
       <button type="button" id="pdfCotBtn" class="btn-secondary" disabled>
         <i class="fas fa-file-pdf"></i> Generar PDF

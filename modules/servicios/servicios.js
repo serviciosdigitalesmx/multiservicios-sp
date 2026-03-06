@@ -43,6 +43,9 @@
           '</div>'
         )
         : '<span class="module-muted">Sin acciones</span>';
+      const wa = window.WAUtils
+        ? window.WAUtils.makeButtonHtml({ phone: s.telefono, folio: (s.idCotizacion || s.id), cliente: s.cliente, className: 'btn-secondary', compact: true })
+        : '';
 
       return '<tr>' +
         '<td>' + e(s.id) + '</td>' +
@@ -51,9 +54,11 @@
         '<td>' + e(s.fecha) + ' ' + e(s.hora) + '</td>' +
         '<td>' + e(s.tecnico) + '</td>' +
         '<td>' + e(s.estado) + '</td>' +
-        '<td>' + actions + '</td>' +
+        '<td style="display:flex;gap:6px;flex-wrap:wrap;">' + actions + wa + '</td>' +
         '</tr>';
     }).join('');
+
+    if (window.WAUtils) window.WAUtils.bind(tbody);
 
     tbody.querySelectorAll('.srv-action').forEach(function (btn) {
       btn.addEventListener('click', async function () {

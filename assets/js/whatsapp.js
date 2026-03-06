@@ -64,21 +64,30 @@
         const phone = btn.getAttribute('data-phone');
         const cliente = btn.getAttribute('data-cliente') || 'cliente';
         const folio = btn.getAttribute('data-folio') || '';
-        const message = 'Hola ' + cliente + ', te contacta el técnico de Multiservicios SP.' +
-          (folio ? '\nFolio: ' + folio : '');
-        const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
-        if (folio) {
-          await copyText(folio);
-        }
-        window.open(url, '_blank');
+        await openContact({ phone: phone, cliente: cliente, folio: folio });
       });
     });
+  }
+
+  async function openContact(opts) {
+    const phone = sanitizePhone(opts && opts.phone);
+    if (!phone) return;
+    const cliente = String(opts && opts.cliente || 'cliente');
+    const folio = formatFolio(opts && opts.folio || '');
+    const message = 'Hola ' + cliente + ', te contacta el técnico de Multiservicios SP.' +
+      (folio ? '\nFolio: ' + folio : '');
+    const url = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(message);
+    if (folio) {
+      await copyText(folio);
+    }
+    window.open(url, '_blank');
   }
 
   window.WAUtils = {
     sanitizePhone: sanitizePhone,
     formatFolio: formatFolio,
     makeButtonHtml: makeButtonHtml,
-    bind: bind
+    bind: bind,
+    openContact: openContact
   };
 })();
