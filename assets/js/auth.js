@@ -3,7 +3,7 @@
   const SESSION_HOURS = 12;
   const CREDENTIALS = {
     user: 'admin',
-    pass: 'Multiservicios2026!'
+    pass: 'Admin1'
   };
 
   function getSession() {
