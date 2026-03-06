@@ -92,6 +92,17 @@
     }
   }
 
+  function prefetchData() {
+    if (typeof window.apiPreload !== 'function') return;
+    window.apiPreload([
+      '/dashboard',
+      '/solicitudes',
+      '/cotizaciones',
+      '/servicios',
+      '/agenda'
+    ]);
+  }
+
   async function loadModule(moduleName) {
     if (window.integradorAuth && !window.integradorAuth.isAuthenticated()) {
       window.integradorAuth.openLogin();
@@ -105,8 +116,12 @@
       return;
     }
 
+    const htmlKey = moduleName + ':html';
+    const isHtmlCached = htmlCache.has(htmlKey);
     const loadToken = ++activeLoadToken;
-    workspace.innerHTML = '<p class="module-muted">Cargando módulo...</p>';
+    if (!isHtmlCached) {
+      workspace.innerHTML = '<p class="module-muted">Cargando módulo...</p>';
+    }
 
     try {
       const html = await getModuleHtml(moduleName, config);
@@ -127,6 +142,7 @@
           Object.keys(MODULE_CONFIG).forEach(function (name) {
             if (name !== 'dashboard') prefetchModule(name);
           });
+          prefetchData();
         });
       }
     } catch (err) {

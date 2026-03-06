@@ -15,13 +15,13 @@
       .replace(/'/g, '&#039;');
   }
 
-  async function cargarCotizacionesRegistradas() {
+  async function cargarCotizacionesRegistradas(force) {
     const tbody = document.querySelector('#tablaCotizaciones tbody');
     if (!tbody) return;
 
     tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
     try {
-      const payload = await window.api('/cotizaciones');
+      const payload = await window.api('/cotizaciones', null, { force: !!force });
       if (!payload || !payload.success) {
         throw new Error(payload && payload.error ? payload.error : 'Respuesta inválida');
       }
@@ -230,10 +230,12 @@
 
   const refreshCotizacionesBtn = document.getElementById('refreshCotizacionesBtn');
   if (refreshCotizacionesBtn) {
-    refreshCotizacionesBtn.addEventListener('click', cargarCotizacionesRegistradas);
+    refreshCotizacionesBtn.addEventListener('click', function () {
+      cargarCotizacionesRegistradas(true);
+    });
   }
 
-  cargarCotizacionesRegistradas();
+  cargarCotizacionesRegistradas(false);
 
   resolveSolicitud().catch(function (err) {
     const hint = document.getElementById('cotizadorHint');

@@ -14,14 +14,14 @@
     return 'estado-nueva';
   }
 
-  async function cargarSolicitudes() {
+  async function cargarSolicitudes(force) {
     const tbody = document.querySelector('#tablaSolicitudes tbody');
     if (!tbody) return;
 
     tbody.innerHTML = '<tr><td colspan="5">Cargando...</td></tr>';
 
     try {
-      const payload = await window.api('/solicitudes');
+      const payload = await window.api('/solicitudes', null, { force: !!force });
       if (!payload || !payload.success) {
         throw new Error(payload && payload.error ? payload.error : 'Respuesta inválida');
       }
@@ -65,8 +65,10 @@
 
   const refreshBtn = document.getElementById('refreshSolicitudes');
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', cargarSolicitudes);
+    refreshBtn.addEventListener('click', function () {
+      cargarSolicitudes(true);
+    });
   }
 
-  cargarSolicitudes();
+  cargarSolicitudes(false);
 })();
