@@ -113,11 +113,15 @@
         const s = solicitudesCache.find(function (x) { return String(x.id) === String(id); });
         if (!s) return;
         fillCotizador(s);
+        const prevEstado = s.estado;
+        s.estado = 'Cotizando';
+        renderSolicitudes(solicitudesCache);
         try {
           await window.api('/marcarSolicitudCotizando', { idSolicitud: id });
-          s.estado = 'Cotizando';
+        } catch (_) {
+          s.estado = prevEstado;
           renderSolicitudes(solicitudesCache);
-        } catch (_) {}
+        }
       });
     });
 
@@ -126,12 +130,15 @@
         const id = btn.getAttribute('data-id');
         const ok = confirm('¿Archivar solicitud ' + id + '?');
         if (!ok) return;
+        const prev = solicitudesCache.slice();
+        solicitudesCache = solicitudesCache.filter(function (s) { return String(s.id) !== String(id); });
+        renderSolicitudes(solicitudesCache);
         try {
           const payload = await window.api('/archiveSolicitud', { idSolicitud: id });
           if (!payload || !payload.success) throw new Error(payload && payload.error ? payload.error : 'No se pudo archivar');
-          solicitudesCache = solicitudesCache.filter(function (s) { return String(s.id) !== String(id); });
-          renderSolicitudes(solicitudesCache);
         } catch (err) {
+          solicitudesCache = prev;
+          renderSolicitudes(solicitudesCache);
           alert('Error: ' + (err.message || err));
         }
       });
@@ -173,7 +180,8 @@
     idCotizacionActiva = payload.idCotizacion;
     document.getElementById('solProgramarBtn').disabled = false;
     document.getElementById('solCotizadorHint').textContent = 'Cotización guardada: ' + idCotizacionActiva;
-    solicitudesCache = solicitudesCache.filter(function (s) { return String(s.id) !== String(solicitudActiva.id); });
+    const currentId = solicitudActiva.id;
+    solicitudesCache = solicitudesCache.filter(function (s) { return String(s.id) !== String(currentId); });
     renderSolicitudes(solicitudesCache);
   }
 
