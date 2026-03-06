@@ -8,6 +8,9 @@
   };
 
   const loadedStyles = new Set();
+  const htmlCache = new Map();
+  const scriptCache = new Map();
+  let activeLoadToken = 0;
 
   function modulePath(moduleName, fileName) {
     return 'modules/' + moduleName + '/' + fileName;
@@ -42,6 +45,53 @@
     loadedStyles.add(href);
   }
 
+  async function getModuleHtml(moduleName, config) {
+    const key = moduleName + ':html';
+    if (htmlCache.has(key)) {
+      return htmlCache.get(key);
+    }
+
+    const resp = await fetch(modulePath(moduleName, config.html));
+    if (!resp.ok) {
+      throw new Error('No se encontró el módulo: ' + moduleName);
+    }
+    const html = await resp.text();
+    htmlCache.set(key, html);
+    return html;
+  }
+
+  async function runModuleScript(moduleName, config) {
+    const key = moduleName + ':js';
+    let source = scriptCache.get(key);
+    if (!source) {
+      const scriptResp = await fetch(modulePath(moduleName, config.js));
+      if (!scriptResp.ok) {
+        throw new Error('No se encontró el script del módulo: ' + moduleName);
+      }
+      source = await scriptResp.text();
+      scriptCache.set(key, source);
+    }
+
+    // Ejecutar en cada navegación para reinicializar listeners del módulo.
+    new Function(source)();
+  }
+
+  function prefetchModule(moduleName) {
+    const config = MODULE_CONFIG[moduleName];
+    if (!config) return;
+
+    getModuleHtml(moduleName, config).catch(function () {});
+    const key = moduleName + ':js';
+    if (!scriptCache.has(key)) {
+      fetch(modulePath(moduleName, config.js))
+        .then(function (resp) { return resp.ok ? resp.text() : ''; })
+        .then(function (src) {
+          if (src) scriptCache.set(key, src);
+        })
+        .catch(function () {});
+    }
+  }
+
   async function loadModule(moduleName) {
     if (window.integradorAuth && !window.integradorAuth.isAuthenticated()) {
       window.integradorAuth.openLogin();
@@ -55,23 +105,30 @@
       return;
     }
 
+    const loadToken = ++activeLoadToken;
     workspace.innerHTML = '<p class="module-muted">Cargando módulo...</p>';
 
     try {
-      const htmlResp = await fetch(modulePath(moduleName, config.html));
-      if (!htmlResp.ok) {
-        throw new Error('No se encontró el módulo: ' + moduleName);
+      const html = await getModuleHtml(moduleName, config);
+      if (loadToken !== activeLoadToken) {
+        return;
       }
 
-      workspace.innerHTML = await htmlResp.text();
+      workspace.innerHTML = html;
       ensureModuleStyle(moduleName);
       updateTitle(moduleName);
       setActiveButton(moduleName);
+      await runModuleScript(moduleName, config);
 
-      const script = document.createElement('script');
-      script.src = modulePath(moduleName, config.js) + '?t=' + Date.now();
-      script.async = false;
-      document.body.appendChild(script);
+      // Precarga el resto de módulos en segundo plano tras primer render.
+      if (moduleName === 'dashboard') {
+        const idle = window.requestIdleCallback || function (cb) { setTimeout(cb, 50); };
+        idle(function () {
+          Object.keys(MODULE_CONFIG).forEach(function (name) {
+            if (name !== 'dashboard') prefetchModule(name);
+          });
+        });
+      }
     } catch (err) {
       workspace.innerHTML = '<p class="module-muted">Error al cargar módulo: ' + err.message + '</p>';
     }

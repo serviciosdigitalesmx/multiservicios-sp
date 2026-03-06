@@ -1,6 +1,8 @@
 :root {
   --brand-primary: #3f43a4;
   --brand-accent: #18a96a;
+  --btn-anim-fast: 140ms;
+  --btn-anim-slow: 220ms;
 }
 
 * {
@@ -16,4 +18,30 @@ body {
 img {
   max-width: 100%;
   height: auto;
+}
+
+/* Animaciones base para interacciones de botones */
+:where(button, .btn-primary, .btn-secondary, .menu-btn, .service-btn, .card-cta, .nav-btn, .whatsapp-btn, .solicitudes-action, .solicitudes-refresh) {
+  transition:
+    transform var(--btn-anim-fast) ease,
+    box-shadow var(--btn-anim-slow) ease,
+    background-color var(--btn-anim-slow) ease,
+    border-color var(--btn-anim-slow) ease,
+    filter var(--btn-anim-slow) ease;
+  will-change: transform;
+}
+
+:where(button, .btn-primary, .btn-secondary, .menu-btn, .service-btn, .card-cta, .nav-btn, .whatsapp-btn, .solicitudes-action, .solicitudes-refresh):hover {
+  transform: translateY(-2px);
+  filter: saturate(1.05);
+}
+
+:where(button, .btn-primary, .btn-secondary, .menu-btn, .service-btn, .card-cta, .nav-btn, .whatsapp-btn, .solicitudes-action, .solicitudes-refresh):active {
+  transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(button, .btn-primary, .btn-secondary, .menu-btn, .service-btn, .card-cta, .nav-btn, .whatsapp-btn, .solicitudes-action, .solicitudes-refresh) {
+    transition: none !important;
+  }
 }
