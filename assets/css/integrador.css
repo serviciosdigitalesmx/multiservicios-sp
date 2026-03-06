@@ -14,6 +14,49 @@ body {
   color: var(--text);
 }
 
+body.auth-locked {
+  overflow: hidden;
+}
+
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  display: none;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 22, 58, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  background: #ffffff;
+  border: 1px solid #d8e0f2;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 14px 34px rgba(15, 22, 58, 0.2);
+}
+
+.auth-card h2 {
+  margin: 0 0 8px;
+}
+
+.auth-card p {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
+
+.auth-form {
+  display: grid;
+  gap: 8px;
+}
+
+.auth-error {
+  min-height: 18px;
+  color: #c0392b;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -21,6 +64,8 @@ body {
 }
 
 .sidebar {
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(180deg, #212765 0%, #303896 100%);
   color: #fff;
   padding: 24px;
@@ -55,6 +100,7 @@ body {
 .menu {
   display: grid;
   gap: 10px;
+  margin-bottom: 12px;
 }
 
 .menu-btn {
@@ -73,6 +119,11 @@ body {
 .menu-btn.is-active {
   background: #18a96a;
   border-color: #18a96a;
+}
+
+.logout-btn {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .workspace-wrap {

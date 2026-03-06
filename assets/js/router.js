@@ -43,6 +43,11 @@
   }
 
   async function loadModule(moduleName) {
+    if (window.integradorAuth && !window.integradorAuth.isAuthenticated()) {
+      window.integradorAuth.openLogin();
+      return;
+    }
+
     const workspace = document.getElementById('workspace');
     const config = MODULE_CONFIG[moduleName];
 
@@ -85,6 +90,18 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     bindMenu();
+    if (window.integradorAuth) {
+      window.integradorAuth.requireAuth(function () {
+        loadModule('dashboard');
+      });
+      window.addEventListener('integrador:auth-changed', function (event) {
+        const ok = event && event.detail && event.detail.authenticated;
+        if (ok) {
+          loadModule('dashboard');
+        }
+      });
+      return;
+    }
     loadModule('dashboard');
   });
 })();

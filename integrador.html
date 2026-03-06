@@ -8,6 +8,21 @@
   <link rel="stylesheet" href="assets/css/integrador.css">
 </head>
 <body>
+  <section id="authGate" class="auth-gate" aria-live="polite">
+    <div class="auth-card">
+      <h2>Acceso Integrador</h2>
+      <p>Inicia sesión para administrar solicitudes, cotizaciones y servicios.</p>
+      <form id="authForm" class="auth-form">
+        <label for="authUser">Usuario</label>
+        <input id="authUser" class="input-lite" type="text" autocomplete="username" required>
+        <label for="authPass">Contraseña</label>
+        <input id="authPass" class="input-lite" type="password" autocomplete="current-password" required>
+        <button type="submit" class="btn-primary">Entrar</button>
+        <small id="authError" class="auth-error" aria-live="assertive"></small>
+      </form>
+    </div>
+  </section>
+
   <div class="layout">
     <aside class="sidebar">
       <div class="brand">
@@ -25,6 +40,7 @@
         <button type="button" data-module="servicios" class="menu-btn">Servicios</button>
         <button type="button" data-module="agenda" class="menu-btn">Agenda</button>
       </nav>
+      <button type="button" id="logoutBtn" class="menu-btn logout-btn">Cerrar sesión</button>
     </aside>
 
     <main class="workspace-wrap">
@@ -36,6 +52,7 @@
   </div>
 
   <script src="assets/js/api.js"></script>
+  <script src="assets/js/auth.js"></script>
   <script src="assets/js/router.js"></script>
 </body>
 </html>
