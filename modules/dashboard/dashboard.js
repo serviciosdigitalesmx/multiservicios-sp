@@ -8,7 +8,6 @@
       }
 
       document.getElementById('solicitudes').textContent = String(data.solicitudes || 0);
-      document.getElementById('cotizaciones').textContent = String(data.cotizaciones || 0);
       const serviciosValue = Array.isArray(data.servicios) ? data.servicios.length : (data.servicios || 0);
       document.getElementById('servicios').textContent = String(serviciosValue);
       document.getElementById('ingresos').textContent = '$' + Number(data.ingresos || 0).toLocaleString('es-MX');
