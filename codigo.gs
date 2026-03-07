@@ -284,10 +284,12 @@ function handleNuevaSolicitud(data, ss) {
 
   const cliente = String(data.cliente || data.nombreCliente || '').trim();
   const telefono = String(data.telefono || '').trim();
-  const servicio = String(data.servicio || '').trim();
+  const servicioBase = String(data.servicio || '').trim();
+  const servicioDetalle = String(data.servicioDetalle || '').trim();
+  const servicio = servicioDetalle ? (servicioBase + ' · ' + servicioDetalle) : servicioBase;
   const direccion = String(data.direccion || '').trim();
 
-  if (!cliente || !telefono || !servicio) {
+  if (!cliente || !telefono || !servicioBase) {
     throw new Error('Cliente, telefono y servicio son obligatorios');
   }
 
@@ -1335,6 +1337,7 @@ function handleGetDashboard(ss) {
   let cotizaciones = 0;
   let servicios = 0;
   let ingresos = 0;
+  const cotizacionesConServicio = {};
 
   if (solicitudesSheet) {
     const solicitudesValues = solicitudesSheet.getDataRange().getValues();
@@ -1346,19 +1349,11 @@ function handleGetDashboard(ss) {
     }
   }
 
-  if (cotizacionesSheet) {
-    const cotValues = cotizacionesSheet.getDataRange().getValues();
-    for (let i = 1; i < cotValues.length; i++) {
-      const estado = String(cotValues[i][17] || '').toUpperCase().trim();
-      if (estado === 'PENDIENTE') {
-        cotizaciones += 1;
-      }
-    }
-  }
-
   if (serviciosSheet) {
     const serviceValues = serviciosSheet.getDataRange().getValues();
     for (let i = 1; i < serviceValues.length; i++) {
+      const idCotizacionServicio = String(serviceValues[i][2] || '').trim();
+      if (idCotizacionServicio) cotizacionesConServicio[idCotizacionServicio] = true;
       const fechaValue = serviceValues[i][7];
       const estadoServicio = String(serviceValues[i][10] || '').toUpperCase().trim();
       const totalServicio = Number(serviceValues[i][11] || 0);
@@ -1370,6 +1365,17 @@ function handleGetDashboard(ss) {
 
       if (estadoServicio === 'REALIZADO' && fechaNormalizada.indexOf(currentMonth) === 0 && totalServicio > 0) {
         ingresos += totalServicio;
+      }
+    }
+  }
+
+  if (cotizacionesSheet) {
+    const cotValues = cotizacionesSheet.getDataRange().getValues();
+    for (let i = 1; i < cotValues.length; i++) {
+      const idCotizacion = String(cotValues[i][0] || '').trim();
+      const estado = String(cotValues[i][17] || '').toUpperCase().trim();
+      if (estado === 'PENDIENTE' && !cotizacionesConServicio[idCotizacion]) {
+        cotizaciones += 1;
       }
     }
   }
@@ -1424,8 +1430,10 @@ function handleGetServicios(ss) {
   const servicios = [];
   const now = new Date();
   for (let i = 1; i < values.length; i++) {
-    const fecha = values[i][7] || '';
-    const hora = values[i][8] || '';
+    const fechaRaw = values[i][7] || '';
+    const horaRaw = values[i][8] || '';
+    const fecha = normalizeDateValue(fechaRaw, Session.getScriptTimeZone());
+    const hora = normalizeTimeValue(horaRaw);
     const estado = values[i][10] || '';
     servicios.push({
       id: values[i][0] || '',
@@ -1440,7 +1448,7 @@ function handleGetServicios(ss) {
       tecnico: values[i][9] || '',
       estado: estado,
       total: values[i][11] || 0,
-      puedeCerrar: canCloseService(fecha, hora, now)
+      puedeCerrar: canCloseService(fechaRaw, horaRaw, now)
     });
   }
 

@@ -396,6 +396,7 @@ async function sendToWhatsApp() {
     comentarios: clientData.comentarios,
     whatsappCliente: clientData.whatsapp || clientData.telefono,
     respuestas: answers,
+    servicioDetalle: answers.p2 || answers.p3 || '',
     folio: folio,
     fechaPreferida: selectedAvailability ? selectedAvailability.fecha : '',
     horaPreferida: selectedAvailability ? selectedAvailability.hora : '',

@@ -107,6 +107,8 @@
     wrap.appendChild(conceptoRow({ desc: s.servicio || 'Servicio técnico', cant: 1, precio: 0 }));
     recalcTotal();
     document.getElementById('solProgramarBtn').disabled = true;
+    const pdfBtn = document.getElementById('solPdfCotBtn');
+    if (pdfBtn) pdfBtn.disabled = true;
   }
 
   function estadoClass(estado) {
@@ -215,6 +217,8 @@
     }
     idCotizacionActiva = payload.idCotizacion;
     document.getElementById('solProgramarBtn').disabled = false;
+    const pdfBtn = document.getElementById('solPdfCotBtn');
+    if (pdfBtn) pdfBtn.disabled = false;
     document.getElementById('solCotizadorHint').textContent = 'Cotización guardada: ' + idCotizacionActiva;
     const currentId = solicitudActiva.id;
     solicitudesCache = solicitudesCache.filter(function (s) { return String(s.id) !== String(currentId); });
@@ -246,6 +250,45 @@
       throw new Error(payload && payload.error ? payload.error : 'No se pudo programar');
     }
     alert('Servicio programado: ' + payload.idServicio);
+  }
+
+  async function generarPdfInline() {
+    if (!idCotizacionActiva) {
+      alert('Primero guarda la cotización.');
+      return;
+    }
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      await new Promise(function (resolve, reject) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+
+    const jsPDF = window.jspdf.jsPDF;
+    const doc = new jsPDF();
+    const conceptos = getConceptos();
+    const total = recalcTotal();
+
+    doc.setFontSize(16);
+    doc.text('Multiservicios SP - Cotización', 14, 18);
+    doc.setFontSize(11);
+    doc.text('Cotización: ' + idCotizacionActiva, 14, 28);
+    doc.text('Solicitud: ' + (solicitudActiva ? solicitudActiva.id : ''), 14, 35);
+    doc.text('Cliente: ' + (document.getElementById('solCotCliente').value || ''), 14, 42);
+    doc.text('Servicio: ' + (document.getElementById('solCotServicio').value || ''), 14, 49);
+
+    let y = 60;
+    conceptos.forEach(function (c, idx) {
+      doc.text((idx + 1) + '. ' + c.desc + ' | ' + c.cant + ' x ' + c.precio + ' = ' + c.importe, 14, y);
+      y += 7;
+    });
+    y += 5;
+    doc.setFontSize(13);
+    doc.text('TOTAL: ' + money(total), 14, y);
+    doc.save(idCotizacionActiva + '.pdf');
   }
 
   const refreshBtn = document.getElementById('refreshSolicitudes');
@@ -290,6 +333,16 @@
         hideCurtain();
         done();
       });
+    });
+  }
+
+  const pdfBtn = document.getElementById('solPdfCotBtn');
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', function () {
+      const done = withBusy(pdfBtn, 'Generando...');
+      generarPdfInline().catch(function (err) {
+        alert('Error PDF: ' + (err.message || err));
+      }).finally(done);
     });
   }
 
